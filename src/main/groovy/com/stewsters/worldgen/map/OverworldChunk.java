@@ -1,6 +1,22 @@
 package com.stewsters.worldgen.map;
 
-import static com.stewsters.worldgen.map.TileType.*;
+import static com.stewsters.worldgen.map.TileType.BARE;
+import static com.stewsters.worldgen.map.TileType.BEACH;
+import static com.stewsters.worldgen.map.TileType.GRASSLAND;
+import static com.stewsters.worldgen.map.TileType.OCEAN_ABYSSAL;
+import static com.stewsters.worldgen.map.TileType.OCEAN_DEEP;
+import static com.stewsters.worldgen.map.TileType.OCEAN_SHALLOW;
+import static com.stewsters.worldgen.map.TileType.SCORCHED;
+import static com.stewsters.worldgen.map.TileType.SHRUBLAND;
+import static com.stewsters.worldgen.map.TileType.SNOW;
+import static com.stewsters.worldgen.map.TileType.SUBTROPICAL_DESERT;
+import static com.stewsters.worldgen.map.TileType.TAIGA;
+import static com.stewsters.worldgen.map.TileType.TEMPERATE_DECIDUOUS_FOREST;
+import static com.stewsters.worldgen.map.TileType.TEMPERATE_DESERT;
+import static com.stewsters.worldgen.map.TileType.TEMPERATE_RAIN_FOREST;
+import static com.stewsters.worldgen.map.TileType.TROPICAL_RAIN_FOREST;
+import static com.stewsters.worldgen.map.TileType.TROPICAL_SEASONAL_FOREST;
+import static com.stewsters.worldgen.map.TileType.TUNDRA;
 
 public class OverworldChunk {
 
@@ -34,39 +50,39 @@ public class OverworldChunk {
     }
 
     public TileType getTileType(int pX, int pY) {
-        return biome(elevation[pX][pY], precipitation[pX][pY]);
+        return biome(elevation[pX][pY], temperature[pX][pY], precipitation[pX][pY]);
     }
 
-    private TileType biome(double e, double m) {
+    private TileType biome(double e, double t, double p) {
 
         if (e < -0.75) return OCEAN_ABYSSAL;
         if (e < -0.05) return OCEAN_DEEP;
         if (e < 0.0) return OCEAN_SHALLOW;
         if (e < 0.01) return BEACH;
 
-        if (e > 0.8) {
-            if (m < 0.1) return SCORCHED;
-            if (m < 0.2) return BARE;
-            if (m < 0.5) return TUNDRA;
+        if (t > 0.8) {
+            if (p < 0.1) return SCORCHED;
+            if (p < 0.2) return BARE;
+            if (p < 0.5) return TUNDRA;
             return SNOW;
         }
 
-        if (e > 0.6) {
-            if (m < 0.33) return TEMPERATE_DESERT;
-            if (m < 0.66) return SHRUBLAND;
+        if (t > 0.6) {
+            if (p < 0.33) return TEMPERATE_DESERT;
+            if (p < 0.66) return SHRUBLAND;
             return TAIGA;
         }
 
-        if (e > 0.3) {
-            if (m < 0.16) return TEMPERATE_DESERT;
-            if (m < 0.50) return GRASSLAND;
-            if (m < 0.83) return TEMPERATE_DECIDUOUS_FOREST;
+        if (t > 0.3) {
+            if (p < 0.16) return TEMPERATE_DESERT;
+            if (p < 0.50) return GRASSLAND;
+            if (p < 0.83) return TEMPERATE_DECIDUOUS_FOREST;
             return TEMPERATE_RAIN_FOREST;
         }
 
-        if (m < 0.16) return SUBTROPICAL_DESERT;
-        if (m < 0.33) return GRASSLAND;
-        if (m < 0.66) return TROPICAL_SEASONAL_FOREST;
+        if (p < 0.16) return SUBTROPICAL_DESERT;
+        if (p < 0.33) return GRASSLAND;
+        if (p < 0.66) return TROPICAL_SEASONAL_FOREST;
         return TROPICAL_RAIN_FOREST;
 
 

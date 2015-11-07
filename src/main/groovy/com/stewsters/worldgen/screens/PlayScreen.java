@@ -1,11 +1,11 @@
 package com.stewsters.worldgen.screens;
 
 
+import com.stewsters.util.math.Point2i;
 import com.stewsters.worldgen.game.Leader;
 import com.stewsters.worldgen.map.OverWorld;
 import com.stewsters.worldgen.map.OverworldChunk;
 import com.stewsters.worldgen.map.TileType;
-import com.stewsters.util.math.Point2i;
 import squidpony.squidcolor.SColor;
 import squidpony.squidgrid.gui.swing.SwingPane;
 
@@ -22,7 +22,7 @@ public class PlayScreen implements Screen {
         screenWidth = 80;
         screenHeight = 40;
 
-        overWorld = new OverWorld(100, 100);
+        overWorld = new OverWorld(10, 10);
         player = new Leader(overWorld, new Point2i(
                 overWorld.xSize * OverworldChunk.chunkSize / 2,
                 overWorld.xSize * OverworldChunk.chunkSize / 2
@@ -53,6 +53,14 @@ public class PlayScreen implements Screen {
         display.placeCharacter(player.pos.x - left, player.pos.y - top, '@', SColor.WHITE);
 
         display.placeHorizontalString(1, screenHeight + 2, overWorld.getTileType(player.pos.x, player.pos.y).name());
+
+        display.placeHorizontalString(1, screenHeight + 3, "Elev: " + String.format("%.2f ft", overWorld.getElevation(player.pos.x, player.pos.y) * 30000));
+
+        display.placeHorizontalString(1, screenHeight + 4, "Temp: " + String.format("%.2f°F", overWorld.getTemp(player.pos.x, player.pos.y) * 100 + 30));
+
+        display.placeHorizontalString(1, screenHeight + 5, "Lat: " + String.format("%.2f°", overWorld.getLatitude(player.pos.y) * 90));
+
+        display.placeHorizontalString(15, screenHeight + 5, "Lon:" + String.format("%.2f°", overWorld.getLatitude(player.pos.x) * 180));
 
     }
 
