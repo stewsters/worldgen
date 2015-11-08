@@ -33,16 +33,18 @@ public class WorldGenerator {
 
                 // Elevation - decreases near edges
                 double elevation = 1 * el.eval(1.0 * nx / 100.0, 1.0 * ny / 100.0)
-                        + 0.5 * Math.pow(el.eval(2.0 * nx / 100.0, 2.0 * ny / 100.0), 2)
-                        + 0.1 * Math.pow(el.eval(nx * (4.0 / 10.0), 4.0 * ny / 10.0), 3);
+                        + 0.5 * Math.pow(el.eval(2.0 * nx / 85.0, 2.0 * ny / 85.0), 2)
+                        + 0.1 * Math.pow(el.eval(4.0 * nx / 10.0, 4.0 * ny / 10.0), 3);
 
                 overworldChunk.elevation[x][y] = (float) (Math.pow(elevation, 2.0) - Math.pow(yDist, 10) - Math.pow(xDist, 10));
 
 
                 // Precipitation
-                overworldChunk.precipitation[x][y] = (float) (1 * mo.eval(1.0 * nx / 30.0, 1.0 * ny / 30.0)
-                        + 0.5 * mo.eval(2.0 * nx / 30.0, 2.0 * ny / 30.0)
-                        + 0.25 * mo.eval(nx * (4.0 / 30.0), 4.0 * ny / 30.0));
+                overworldChunk.precipitation[x][y] = (float) (
+                        (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
+                                0.25 * mo.eval(nx / 45.0, ny / 45.0)
+
+                        ) / 2.f) + 0.5f;
 
                 // Temperature
                 //decreases with height, decreases with closeness to poles

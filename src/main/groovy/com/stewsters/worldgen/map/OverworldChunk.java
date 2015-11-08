@@ -63,20 +63,20 @@ public class OverworldChunk {
         if (e < 0.0) return OCEAN_SHALLOW;
         if (e < 0.01) return BEACH;
 
-        if (t > 0.8) {
+        if (t <0) {
             if (p < 0.1) return SCORCHED;
             if (p < 0.2) return BARE;
             if (p < 0.5) return TUNDRA;
             return SNOW;
         }
 
-        if (t > 0.6) {
+        if (t < 0.20) {
             if (p < 0.33) return TEMPERATE_DESERT;
             if (p < 0.66) return SHRUBLAND;
             return TAIGA;
         }
 
-        if (t > 0.3) {
+        if (t < 0.4) {
             if (p < 0.16) return TEMPERATE_DESERT;
             if (p < 0.50) return GRASSLAND;
             if (p < 0.83) return TEMPERATE_DECIDUOUS_FOREST;

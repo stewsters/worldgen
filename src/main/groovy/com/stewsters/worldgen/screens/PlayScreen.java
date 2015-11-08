@@ -58,9 +58,13 @@ public class PlayScreen implements Screen {
 
         display.placeHorizontalString(1, screenHeight + 4, "Temp: " + String.format("%.2f°F", overWorld.getTemp(player.pos.x, player.pos.y) * 100 + 30));
 
-        display.placeHorizontalString(1, screenHeight + 5, "Lat: " + String.format("%.2f°", -overWorld.getLatitude(player.pos.y) * 90));
+        display.placeHorizontalString(1, screenHeight + 5, "Prec: "+ String.format("%.2f u",overWorld.getPrecipitation(player.pos.x, player.pos.y) ));
 
-        display.placeHorizontalString(15, screenHeight + 5, "Lon:" + String.format("%.2f°", overWorld.getLongitude(player.pos.x) * 180));
+        display.placeHorizontalString(1, screenHeight + 6, "Lat: " + String.format("%.2f°", -overWorld.getLatitude(player.pos.y) * 90));
+
+        display.placeHorizontalString(15, screenHeight + 6, "Lon:" + String.format("%.2f°", overWorld.getLongitude(player.pos.x) * 180));
+
+
 
     }
 

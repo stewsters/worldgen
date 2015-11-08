@@ -82,6 +82,13 @@ public class OverWorld {
         return chunk.temperature[getPrecise(globalX)][getPrecise(globalY)];
     }
 
+    public float getPrecipitation(int globalX, int globalY) {
+        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return -1;
+
+        return chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)];
+    }
 
     public float getLatitude(int globalY) {
 
