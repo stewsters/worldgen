@@ -2,6 +2,7 @@ package com.stewsters.worldgen.screens;
 
 
 import com.stewsters.util.math.Point2i;
+import com.stewsters.worldgen.export.PngExporter;
 import com.stewsters.worldgen.game.Leader;
 import com.stewsters.worldgen.map.OverWorld;
 import com.stewsters.worldgen.map.OverworldChunk;
@@ -109,12 +110,16 @@ public class PlayScreen implements Screen {
             case KeyEvent.VK_NUMPAD3:
                 player.moveBy(1, 1, 0);
                 break;
-            case KeyEvent.VK_PERIOD:
-                player.moveBy(0, 0, 1);
+            case KeyEvent.VK_E:
+                PngExporter.export(overWorld, "export/export.png");
                 break;
-            case KeyEvent.VK_COMMA:
-                player.moveBy(0, 0, -1);
-                break;
+
+//            case KeyEvent.VK_PERIOD:
+//                player.moveBy(0, 0, 1);
+//                break;
+//            case KeyEvent.VK_COMMA:
+//                player.moveBy(0, 0, -1);
+//                break;
         }
         overWorld.update();
 

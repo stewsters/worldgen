@@ -22,9 +22,14 @@ public class OverWorld {
         this.xSize = xSize;
         this.ySize = ySize;
 
+        worldGenerator = new WorldGenerator();
         chunks = new OverworldChunk[xSize][ySize];
 
-        worldGenerator = new WorldGenerator();
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
+                loadChunk(x, y);
+            }
+        }
     }
 
     public void update() {
@@ -98,7 +103,7 @@ public class OverWorld {
 
     public float getLongitude(int globalX) {
         int xCenter = xSize * OverworldChunk.chunkSize / 2;
-        return  (float)(globalX - xCenter) / xCenter;
+        return (float) (globalX - xCenter) / xCenter;
     }
 
 }
