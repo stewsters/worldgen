@@ -4,15 +4,31 @@ import com.stewsters.util.noise.OpenSimplexNoise;
 import com.stewsters.worldgen.map.OverWorld;
 import com.stewsters.worldgen.map.OverworldChunk;
 
+import java.util.Random;
 import java.util.logging.Logger;
 
 public class WorldGenerator {
 
     private final static Logger log = Logger.getLogger(WorldGenerator.class.getName());
-    OpenSimplexNoise el = new OpenSimplexNoise();
-    OpenSimplexNoise mo = new OpenSimplexNoise();
+    OpenSimplexNoise el;
+    OpenSimplexNoise mo;
+    Random r;
+
+    public WorldGenerator(long seed) {
+        r = new Random(seed);
+        el = new OpenSimplexNoise(r.nextLong());
+        mo = new OpenSimplexNoise(r.nextLong());
+    }
+
+
+    public WorldGenerator() {
+        r = new Random();
+        el = new OpenSimplexNoise(r.nextLong());
+        mo = new OpenSimplexNoise(r.nextLong());
+    }
 
     public OverworldChunk generate(OverWorld overWorld, int chunkX, int chunkY) {
+
 
         log.info("generating " + chunkX + " : " + chunkY);
 
@@ -32,11 +48,11 @@ public class WorldGenerator {
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
                 // Elevation - decreases near edges
-                double elevation = 1 * el.eval(1.0 * nx / 100.0, 1.0 * ny / 100.0)
-                        + 0.5 * Math.pow(el.eval(2.0 * nx / 85.0, 2.0 * ny / 85.0), 2)
+                double elevation = 0.6 * el.eval(1.0 * nx / 100.0, 1.0 * ny / 100.0)
+                        + 0.3 * Math.pow(el.eval(2.0 * nx / 85.0, 2.0 * ny / 85.0), 2)
                         + 0.1 * Math.pow(el.eval(4.0 * nx / 10.0, 4.0 * ny / 10.0), 3);
 
-                overworldChunk.elevation[x][y] = (float) (Math.pow(elevation, 2.0) - Math.pow(yDist, 10) - Math.pow(xDist, 10));
+                overworldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (Math.pow(elevation, 2.0) - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
 
 
                 // Precipitation

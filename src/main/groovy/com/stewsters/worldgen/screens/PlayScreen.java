@@ -111,7 +111,7 @@ public class PlayScreen implements Screen {
                 player.moveBy(1, 1, 0);
                 break;
             case KeyEvent.VK_E:
-                PngExporter.export(overWorld, "export/export.png");
+                PngExporter.export(overWorld);
                 break;
 
 //            case KeyEvent.VK_PERIOD:
