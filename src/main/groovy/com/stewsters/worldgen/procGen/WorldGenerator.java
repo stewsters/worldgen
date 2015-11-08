@@ -48,11 +48,11 @@ public class WorldGenerator {
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
                 // Elevation - decreases near edges
-                double elevation = 0.6 * el.eval(1.0 * nx / 100.0, 1.0 * ny / 100.0)
-                        + 0.3 * Math.pow(el.eval(2.0 * nx / 85.0, 2.0 * ny / 85.0), 2)
-                        + 0.1 * Math.pow(el.eval(4.0 * nx / 10.0, 4.0 * ny / 10.0), 3);
+                double elevation = 0.6 * el.eval(nx / 100.0, ny / 100.0)
+                        + 0.3 * Math.pow(el.eval( nx / 42.0,  ny / 42.0), 3)
+                        + 0.1 * Math.pow(el.eval( nx / 10.0,  ny / 10.0), 3);
 
-                overworldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (Math.pow(elevation, 2.0) - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
+                overworldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (Math.pow(elevation, 3.0) - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
 
 
                 // Precipitation
