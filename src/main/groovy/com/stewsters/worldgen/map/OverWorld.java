@@ -86,12 +86,12 @@ public class OverWorld {
     public float getLatitude(int globalY) {
 
         int yCenter = ySize * OverworldChunk.chunkSize / 2;
-        return (float) Math.abs(globalY - yCenter) / yCenter;
+        return (float) (globalY - yCenter) / yCenter;
     }
 
     public float getLongitude(int globalX) {
         int xCenter = xSize * OverworldChunk.chunkSize / 2;
-        return  (float) Math.abs(globalX - xCenter) / xCenter;
+        return  (float)(globalX - xCenter) / xCenter;
     }
 
 }

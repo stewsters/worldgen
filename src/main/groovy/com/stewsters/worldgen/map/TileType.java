@@ -27,7 +27,8 @@ public enum TileType {
     SUBTROPICAL_DESERT(false, 'd', SColor.GREEN_BAMBOO),
     GRASSLAND(false, ':', SColor.GREEN),
     TROPICAL_SEASONAL_FOREST(false, 'S', SColor.GREEN_BAMBOO),
-    TROPICAL_RAIN_FOREST(false, 'T', SColor.DARK_GREEN);
+    TROPICAL_RAIN_FOREST(false, 'T', SColor.DARK_GREEN),
+    SEA_ICE(false, '_', SColor.NAVAJO_WHITE);
 
 
     public final boolean blocks;

@@ -7,6 +7,7 @@ import static com.stewsters.worldgen.map.TileType.OCEAN_ABYSSAL;
 import static com.stewsters.worldgen.map.TileType.OCEAN_DEEP;
 import static com.stewsters.worldgen.map.TileType.OCEAN_SHALLOW;
 import static com.stewsters.worldgen.map.TileType.SCORCHED;
+import static com.stewsters.worldgen.map.TileType.SEA_ICE;
 import static com.stewsters.worldgen.map.TileType.SHRUBLAND;
 import static com.stewsters.worldgen.map.TileType.SNOW;
 import static com.stewsters.worldgen.map.TileType.SUBTROPICAL_DESERT;
@@ -54,6 +55,8 @@ public class OverworldChunk {
     }
 
     private TileType biome(double e, double t, double p) {
+
+        if (e < 0.0 && t < 0.0) return SEA_ICE;
 
         if (e < -0.75) return OCEAN_ABYSSAL;
         if (e < -0.05) return OCEAN_DEEP;

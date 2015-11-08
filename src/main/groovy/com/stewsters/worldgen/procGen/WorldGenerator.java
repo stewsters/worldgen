@@ -47,7 +47,11 @@ public class WorldGenerator {
                 // Temperature
                 //decreases with height, decreases with closeness to poles
 
-                overworldChunk.temperature[x][y] = (0.75f - (1.5f * yDist)) - Math.max(0, (overworldChunk.elevation[x][y] / 2));
+
+                overworldChunk.temperature[x][y] =
+                        (0.75f - (1.5f * yDist)) - Math.max(0, (overworldChunk.elevation[x][y] / 2))
+                                + 0.1f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
+                ;
 
                 // Drainage
 
