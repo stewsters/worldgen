@@ -26,9 +26,10 @@ class PngExporter {
                 biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
 
                 float heightVal = (float) ((-overWorld.getElevation(x, y) - 1f) / 2f);
-
-
                 height.setRGB(x, y, Color.getHSBColor(heightVal, 0.5f, 0.5f).getRGB())
+
+                float tempVal = (float) ((-overWorld.getTemp(x, y) - 1f) / 2f);
+                temper.setRGB(x, y, Color.getHSBColor(tempVal, 0.5f, 0.5f).getRGB())
 
             }
         }
@@ -36,7 +37,7 @@ class PngExporter {
 
         ImageIO.write(biomes, "PNG", new File("export/biomes.png"));
         ImageIO.write(height, "PNG", new File("export/elevation.png"));
-
+        ImageIO.write(temper, "PNG", new File("export/temperature.png"));
 
         println("Image written")
 
