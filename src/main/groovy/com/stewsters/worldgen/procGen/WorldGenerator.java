@@ -49,8 +49,8 @@ public class WorldGenerator {
 
                 // Elevation - decreases near edges
                 double elevation = 0.6 * el.eval(nx / 120.0, ny / 120.0)
-                        + 0.3 * el.eval( nx / 42.0,  ny / 42.0)
-                        + 0.1 * el.eval( nx / 10.0,  ny / 10.0);
+                        + 0.3 * el.eval(nx / 42.0, ny / 42.0)
+                        + 0.1 * el.eval(nx / 10.0, ny / 10.0);
 
                 overworldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
 
@@ -66,9 +66,10 @@ public class WorldGenerator {
                 //decreases with height, decreases with closeness to poles
 
 
-                overworldChunk.temperature[x][y] =
-                        (0.75f - (1.5f * yDist)) - Math.max(0, (overworldChunk.elevation[x][y] / 2))
-                                + 0.1f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
+                overworldChunk.temperature[x][y] = 1 - Math.max(yDist, overworldChunk.elevation[x][y])
+                        - 0.4f * yDist
+                        - 0.4f * overworldChunk.elevation[x][y]
+                        + 0.2f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
                 ;
 
                 // Drainage
