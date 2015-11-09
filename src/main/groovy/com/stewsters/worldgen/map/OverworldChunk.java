@@ -1,23 +1,6 @@
 package com.stewsters.worldgen.map;
 
-import static com.stewsters.worldgen.map.TileType.BARE;
-import static com.stewsters.worldgen.map.TileType.BEACH;
-import static com.stewsters.worldgen.map.TileType.GRASSLAND;
-import static com.stewsters.worldgen.map.TileType.OCEAN_ABYSSAL;
-import static com.stewsters.worldgen.map.TileType.OCEAN_DEEP;
-import static com.stewsters.worldgen.map.TileType.OCEAN_SHALLOW;
-import static com.stewsters.worldgen.map.TileType.SCORCHED;
-import static com.stewsters.worldgen.map.TileType.SEA_ICE;
-import static com.stewsters.worldgen.map.TileType.SHRUBLAND;
-import static com.stewsters.worldgen.map.TileType.SNOW;
-import static com.stewsters.worldgen.map.TileType.SUBTROPICAL_DESERT;
-import static com.stewsters.worldgen.map.TileType.TAIGA;
-import static com.stewsters.worldgen.map.TileType.TEMPERATE_DECIDUOUS_FOREST;
-import static com.stewsters.worldgen.map.TileType.TEMPERATE_DESERT;
-import static com.stewsters.worldgen.map.TileType.TEMPERATE_RAIN_FOREST;
-import static com.stewsters.worldgen.map.TileType.TROPICAL_RAIN_FOREST;
-import static com.stewsters.worldgen.map.TileType.TROPICAL_SEASONAL_FOREST;
-import static com.stewsters.worldgen.map.TileType.TUNDRA;
+import static com.stewsters.worldgen.map.TileType.*;
 
 public class OverworldChunk {
 
@@ -31,6 +14,8 @@ public class OverworldChunk {
     public float[][] precipitation;
     public float[][] drainage;
 
+    public boolean[][] river;
+
     public OverworldChunk(long lowCornerX, long lowCornerY) {
         this.lowCornerX = lowCornerX;
         this.lowCornerY = lowCornerY;
@@ -40,17 +25,23 @@ public class OverworldChunk {
         precipitation = new float[chunkSize][chunkSize];
         drainage = new float[chunkSize][chunkSize];
 
+        river = new boolean[chunkSize][chunkSize];
+
         for (int x = 0; x < chunkSize; x++) {
             for (int y = 0; y < chunkSize; y++) {
                 elevation[x][y] = 0f;
                 temperature[x][y] = 0f;
                 precipitation[x][y] = 0f;
                 drainage[x][y] = 0f;
+                river[x][y] = false;
             }
         }
     }
 
     public TileType getTileType(int pX, int pY) {
+
+        if(river[pX][pY])
+            return RIVER;
         return biome(elevation[pX][pY], temperature[pX][pY], precipitation[pX][pY]);
     }
 

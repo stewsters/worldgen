@@ -4,6 +4,8 @@ import squidpony.squidcolor.SColor;
 
 public enum TileType {
 
+    RIVER(false, '~', SColor.ALICE_BLUE),
+
     OCEAN_ABYSSAL(false, '~', SColor.DARK_BLUE),
     OCEAN_DEEP(false, '~', SColor.BLUE),
     OCEAN_SHALLOW(false, '~', SColor.LIGHT_BLUE),

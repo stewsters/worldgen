@@ -1,8 +1,11 @@
 package com.stewsters.worldgen.map;
 
 
+import com.stewsters.util.math.Facing2d;
+import com.stewsters.util.math.MatUtils;
 import com.stewsters.worldgen.procGen.WorldGenerator;
 
+import java.util.Random;
 import java.util.logging.Logger;
 
 
@@ -30,6 +33,57 @@ public class OverWorld {
                 loadChunk(x, y);
             }
         }
+
+        // Run rivers
+
+        Random r = new Random();
+
+        for (int i = 0; i < 10; i++) {
+            int x = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
+            int y = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
+            boolean done = false;
+
+            while (!done) {
+
+                // if the biome is ocean or frozen then end.
+                Facing2d facing = null;
+                float height = getElevation(x, y);
+
+                if (height > getElevation(x, y + 1)) {
+                    facing = Facing2d.NORTH;
+                    height = getElevation(x, y + 1);
+                }
+
+                if (height > getElevation(x, y - 1)) {
+                    facing = Facing2d.SOUTH;
+                    height = getElevation(x, y - 1);
+                }
+
+                if (height > getElevation(x + 1, y)) {
+                    facing = Facing2d.EAST;
+                    height = getElevation(x + 1, y);
+                }
+
+                if (height > getElevation(x - 1, y)) {
+                    facing = Facing2d.WEST;
+                    height = getElevation(x - 1, y);
+                }
+
+                if (facing == null) {
+                    done = true;
+                } else {
+                    setRiver(x, y);
+
+                    x = x + facing.x;
+                    y = y + facing.y;
+                }
+
+            }
+
+
+        }
+
+
     }
 
     public void update() {
@@ -93,6 +147,13 @@ public class OverWorld {
             return -1;
 
         return chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+
+    private void setRiver(int globalX, int globalY) {
+        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk != null)
+            chunk.river[getPrecise(globalX)][getPrecise(globalY)] = true;
     }
 
     public float getLatitude(int globalY) {
