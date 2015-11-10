@@ -11,3 +11,5 @@ gradle-app.setting
 # Created by .ignore support plugin (hsz.mobi)
 
 .idea
+export
+*.iml

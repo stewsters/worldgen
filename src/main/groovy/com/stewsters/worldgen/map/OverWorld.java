@@ -38,12 +38,17 @@ public class OverWorld {
 
         Random r = new Random();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             int x = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
             int y = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
             boolean done = false;
 
             while (!done) {
+
+                TileType existingType = getTileType(x, y);
+                if (existingType == TileType.OCEAN_ABYSSAL || existingType == TileType.OCEAN_DEEP || existingType == TileType.OCEAN_SHALLOW) {
+                    break;
+                }
 
                 // if the biome is ocean or frozen then end.
                 Facing2d facing = null;

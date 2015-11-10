@@ -37,8 +37,6 @@ public enum TileType {
     public final SColor color;
     public final char character;
 
-    public static TileType[] lookup = TileType.values();
-
     TileType(boolean blocks, char character, SColor color) {
         this.blocks = blocks;
         this.character = character;
