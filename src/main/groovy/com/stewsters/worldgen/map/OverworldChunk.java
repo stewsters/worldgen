@@ -1,6 +1,6 @@
 package com.stewsters.worldgen.map;
 
-import static com.stewsters.worldgen.map.TileType.*;
+import static com.stewsters.worldgen.map.BiomeType.*;
 
 public class OverworldChunk {
 
@@ -38,14 +38,14 @@ public class OverworldChunk {
         }
     }
 
-    public TileType getTileType(int pX, int pY) {
+    public BiomeType getTileType(int pX, int pY) {
 
         if(river[pX][pY])
             return RIVER;
         return biome(elevation[pX][pY], temperature[pX][pY], precipitation[pX][pY]);
     }
 
-    private TileType biome(double e, double t, double p) {
+    private BiomeType biome(double e, double t, double p) {
 
         if (e < 0.0 && t < 0.0) return SEA_ICE;
 

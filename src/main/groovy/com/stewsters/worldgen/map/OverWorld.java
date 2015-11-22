@@ -45,8 +45,8 @@ public class OverWorld {
 
             while (!done) {
 
-                TileType existingType = getTileType(x, y);
-                if (existingType == TileType.OCEAN_ABYSSAL || existingType == TileType.OCEAN_DEEP || existingType == TileType.OCEAN_SHALLOW) {
+                BiomeType existingType = getTileType(x, y);
+                if (existingType == BiomeType.OCEAN_ABYSSAL || existingType == BiomeType.OCEAN_DEEP || existingType == BiomeType.OCEAN_SHALLOW) {
                     break;
                 }
 
@@ -122,10 +122,10 @@ public class OverWorld {
     }
 
 
-    public TileType getTileType(int globalX, int globalY) {
+    public BiomeType getTileType(int globalX, int globalY) {
         OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
         if (chunk == null)
-            return TileType.OCEAN_ABYSSAL;
+            return BiomeType.OCEAN_ABYSSAL;
 
         return chunk.getTileType(getPrecise(globalX), getPrecise(globalY));
     }

@@ -1,15 +1,20 @@
-package com.stewsters.worldgen.export
+package com.stewsters.worldgen.messageBus.system
 
 import com.stewsters.worldgen.map.OverWorld
 import com.stewsters.worldgen.map.OverworldChunk
+import com.stewsters.worldgen.messageBus.Bus
+import net.engio.mbassy.listener.Handler
 
 import javax.imageio.ImageIO
 import java.awt.*
 import java.awt.image.BufferedImage
 
-class PngExporter {
+class PngWorldMapExporter {
 
-    public static void export(OverWorld overWorld) {
+    @Handler
+    public void handle(OverWorld overWorld) {
+
+        Bus.bus.post("Writing image").asynchronously()
 
         int xTotal = overWorld.xSize * OverworldChunk.chunkSize;
         int yTotal = overWorld.ySize * OverworldChunk.chunkSize;
@@ -43,7 +48,7 @@ class PngExporter {
         ImageIO.write(precip, "PNG", new File("export/precipitation.png"));
         ImageIO.write(temper, "PNG", new File("export/temperature.png"));
 
-        println("Image written")
+        Bus.bus.post("Image written").asynchronously()
 
     }
 

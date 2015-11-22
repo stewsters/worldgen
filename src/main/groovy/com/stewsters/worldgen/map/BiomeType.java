@@ -2,7 +2,7 @@ package com.stewsters.worldgen.map;
 
 import squidpony.squidcolor.SColor;
 
-public enum TileType {
+public enum BiomeType {
 
     RIVER(false, '~', SColor.ALICE_BLUE),
 
@@ -37,7 +37,7 @@ public enum TileType {
     public final SColor color;
     public final char character;
 
-    TileType(boolean blocks, char character, SColor color) {
+    BiomeType(boolean blocks, char character, SColor color) {
         this.blocks = blocks;
         this.character = character;
         this.color = color;
