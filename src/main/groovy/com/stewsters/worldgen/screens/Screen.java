@@ -6,7 +6,7 @@ import java.awt.event.KeyEvent;
 
 
 public interface Screen {
-    public void displayOutput(SwingPane display);
+    void displayOutput(SwingPane display);
 
-    public Screen respondToUserInput(KeyEvent key);
+    Screen respondToUserInput(KeyEvent key);
 }

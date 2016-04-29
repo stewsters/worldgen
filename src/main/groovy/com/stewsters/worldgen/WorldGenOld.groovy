@@ -1,19 +1,10 @@
 package com.stewsters.worldgen
 
-import com.stewsters.util.noise.OpenSimplexNoise
-
-/**
- * Created by bloodred on 10/12/15.
- */
 class WorldGenOld {
-
-
-    
-
 
 //    OpenSimplexNoise openSimplexNoise = new OpenSimplexNoise()
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
 
         generateHeightMap()
@@ -37,9 +28,7 @@ class WorldGenOld {
     }
 
 
-
     static def generateHeightMap() {
-
 
 
     }

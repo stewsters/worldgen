@@ -3,7 +3,7 @@ package com.stewsters.worldgen
 import com.stewsters.worldgen.messageBus.message.MovementMsg
 import com.stewsters.worldgen.messageBus.system.LogSystem
 import com.stewsters.worldgen.messageBus.system.MovementSystem
-import com.stewsters.worldgen.map.OverWorld
+import com.stewsters.worldgen.map.overworld.OverWorld
 import com.stewsters.util.math.Facing2d
 import net.engio.mbassy.bus.MBassador
 import org.junit.Test

@@ -1,11 +1,12 @@
-package com.stewsters.worldgen.map;
+package com.stewsters.worldgen.map.overworld;
 
 
 import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
+import com.stewsters.worldgen.game.Settlement;
+import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.procGen.WorldGenerator;
 
-import java.util.Random;
 import java.util.logging.Logger;
 
 
@@ -16,7 +17,7 @@ public class OverWorld {
 
     private static final Logger log = Logger.getLogger(OverWorld.class.getName());
 
-    public final OverworldChunk[][] chunks;
+    public final OverWorldChunk[][] chunks;
 
     private WorldGenerator worldGenerator;
 
@@ -26,7 +27,7 @@ public class OverWorld {
         this.ySize = ySize;
 
         worldGenerator = new WorldGenerator();
-        chunks = new OverworldChunk[xSize][ySize];
+        chunks = new OverWorldChunk[xSize][ySize];
 
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
@@ -36,11 +37,9 @@ public class OverWorld {
 
         // Run rivers
 
-        Random r = new Random();
-
         for (int i = 0; i < 50; i++) {
-            int x = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
-            int y = MatUtils.getIntInRange(0, xSize * OverworldChunk.chunkSize - 1);
+            int x = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
+            int y = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
             boolean done = false;
 
             while (!done) {
@@ -88,6 +87,17 @@ public class OverWorld {
 
         }
 
+        // Build Settlements
+        for (int i = 0; i < 100; i++) {
+            int x = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
+            int y = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
+
+            if (!getTileType(x, y).name().startsWith("OCEAN")) {
+                buildSettlement(x, y);
+            }
+
+        }
+
 
     }
 
@@ -95,23 +105,84 @@ public class OverWorld {
 
     }
 
-    private static int getPrecise(long globalCoord) {
+
+    private static int getPrecise(int globalCoord) {
         if (globalCoord >= 0) {
-            return (int) (globalCoord % OverworldChunk.chunkSize);
+            return (globalCoord % OverWorldChunk.chunkSize);
         } else {
-            return (int) (globalCoord % OverworldChunk.chunkSize) + OverworldChunk.chunkSize - 1;
+            return (globalCoord % OverWorldChunk.chunkSize) + OverWorldChunk.chunkSize - 1;
         }
     }
 
     private static int getChunkCoord(int globalCoord) {
         if (globalCoord >= 0) {
-            return (globalCoord / OverworldChunk.chunkSize);
+            return (globalCoord / OverWorldChunk.chunkSize);
         } else {
-            return (globalCoord / OverworldChunk.chunkSize) - 1;
+            return (globalCoord / OverWorldChunk.chunkSize) - 1;
         }
     }
 
-    private OverworldChunk loadChunk(int chunkX, int chunkY) {
+
+    public BiomeType getTileType(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return BiomeType.OCEAN_ABYSSAL;
+
+        return chunk.getTileType(getPrecise(globalX), getPrecise(globalY));
+    }
+
+    public float getElevation(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return -1;
+
+        return chunk.elevation[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public float getTemp(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return -1;
+
+        return chunk.temperature[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public float getPrecipitation(int globalX, int globalY) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk == null)
+            return -1;
+
+        return chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+
+    private void setRiver(int globalX, int globalY) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.river[getPrecise(globalX)][getPrecise(globalY)] = true;
+    }
+
+    public float getLatitude(int globalY) {
+        int yCenter = ySize * OverWorldChunk.chunkSize / 2;
+        return (float) (globalY - yCenter) / yCenter;
+    }
+
+    public float getLongitude(int globalX) {
+        int xCenter = xSize * OverWorldChunk.chunkSize / 2;
+        return (float) (globalX - xCenter) / xCenter;
+    }
+
+    private void buildSettlement(int globalX, int globalY) {
+
+        Settlement settlement = Settlement.build(globalX, globalY);
+
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+
+        chunk.settlement[getPrecise(globalX)][getPrecise(globalY)] = settlement;
+    }
+
+
+    private OverWorldChunk loadChunk(int chunkX, int chunkY) {
 
         if (chunkX < 0 || chunkX >= xSize || chunkY < 0 || chunkY >= ySize) {
             return null;
@@ -121,55 +192,15 @@ public class OverWorld {
         return chunks[chunkX][chunkY];
     }
 
+    public OverWorldChunk loadGlobalChunk(int globalX, int globalY) {
+        return loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+    }
 
-    public BiomeType getTileType(int globalX, int globalY) {
-        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+    public Settlement getSettlement(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
         if (chunk == null)
-            return BiomeType.OCEAN_ABYSSAL;
+            return null;
 
-        return chunk.getTileType(getPrecise(globalX), getPrecise(globalY));
+        return chunk.settlement[getPrecise(globalX)][getPrecise(globalY)];
     }
-
-    public float getElevation(int globalX, int globalY) {
-        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
-        if (chunk == null)
-            return -1;
-
-        return chunk.elevation[getPrecise(globalX)][getPrecise(globalY)];
-    }
-
-    public float getTemp(int globalX, int globalY) {
-        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
-        if (chunk == null)
-            return -1;
-
-        return chunk.temperature[getPrecise(globalX)][getPrecise(globalY)];
-    }
-
-    public float getPrecipitation(int globalX, int globalY) {
-        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
-        if (chunk == null)
-            return -1;
-
-        return chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)];
-    }
-
-
-    private void setRiver(int globalX, int globalY) {
-        OverworldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
-        if (chunk != null)
-            chunk.river[getPrecise(globalX)][getPrecise(globalY)] = true;
-    }
-
-    public float getLatitude(int globalY) {
-
-        int yCenter = ySize * OverworldChunk.chunkSize / 2;
-        return (float) (globalY - yCenter) / yCenter;
-    }
-
-    public float getLongitude(int globalX) {
-        int xCenter = xSize * OverworldChunk.chunkSize / 2;
-        return (float) (globalX - xCenter) / xCenter;
-    }
-
 }

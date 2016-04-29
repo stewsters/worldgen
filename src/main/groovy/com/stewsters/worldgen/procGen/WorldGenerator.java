@@ -1,8 +1,8 @@
 package com.stewsters.worldgen.procGen;
 
 import com.stewsters.util.noise.OpenSimplexNoise;
-import com.stewsters.worldgen.map.OverWorld;
-import com.stewsters.worldgen.map.OverworldChunk;
+import com.stewsters.worldgen.map.overworld.OverWorld;
+import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 
 import java.util.Random;
 import java.util.logging.Logger;
@@ -27,22 +27,22 @@ public class WorldGenerator {
         mo = new OpenSimplexNoise(r.nextLong());
     }
 
-    public OverworldChunk generate(OverWorld overWorld, int chunkX, int chunkY) {
+    public OverWorldChunk generate(OverWorld overWorld, int chunkX, int chunkY) {
 
 
         log.info("generating " + chunkX + " : " + chunkY);
 
-        OverworldChunk overworldChunk = new OverworldChunk(chunkX, chunkY);
+        OverWorldChunk overWorldChunk = new OverWorldChunk(chunkX, chunkY);
 
-        int xCenter = overWorld.xSize * OverworldChunk.chunkSize / 2;
-        int yCenter = overWorld.ySize * OverworldChunk.chunkSize / 2;
+        int xCenter = overWorld.xSize * OverWorldChunk.chunkSize / 2;
+        int yCenter = overWorld.ySize * OverWorldChunk.chunkSize / 2;
 
-        for (int x = 0; x < OverworldChunk.chunkSize; x++) {
-            for (int y = 0; y < OverworldChunk.chunkSize; y++) {
+        for (int x = 0; x < OverWorldChunk.chunkSize; x++) {
+            for (int y = 0; y < OverWorldChunk.chunkSize; y++) {
 
                 //global coord
-                int nx = chunkX * OverworldChunk.chunkSize + x;
-                int ny = chunkY * OverworldChunk.chunkSize + y;
+                int nx = chunkX * OverWorldChunk.chunkSize + x;
+                int ny = chunkY * OverWorldChunk.chunkSize + y;
 
                 float xDist = (float) Math.abs(nx - xCenter) / xCenter;
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
@@ -52,11 +52,11 @@ public class WorldGenerator {
                         + 0.3 * el.eval(nx / 42.0, ny / 42.0)
                         + 0.1 * el.eval(nx / 10.0, ny / 10.0);
 
-                overworldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
+                overWorldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
 
 
                 // Precipitation
-                overworldChunk.precipitation[x][y] = (float) (
+                overWorldChunk.precipitation[x][y] = (float) (
                         (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
                                 0.25 * mo.eval(nx / 45.0, ny / 45.0)
 
@@ -66,18 +66,17 @@ public class WorldGenerator {
                 //decreases with height, decreases with closeness to poles
 
 
-                overworldChunk.temperature[x][y] = 1 - Math.max(yDist, overworldChunk.elevation[x][y])
+                overWorldChunk.temperature[x][y] = 1 - Math.max(yDist, overWorldChunk.elevation[x][y])
                         - 0.4f * yDist
-                        - 0.4f * overworldChunk.elevation[x][y]
+                        - 0.4f * overWorldChunk.elevation[x][y]
                         + 0.2f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
-                ;
 
                 // Drainage
 
 
             }
         }
-        return overworldChunk;
+        return overWorldChunk;
 
     }
 

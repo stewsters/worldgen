@@ -5,9 +5,6 @@ import com.stewsters.worldgen.messageBus.system.MovementSystem;
 import com.stewsters.worldgen.messageBus.system.PngWorldMapExporter;
 import net.engio.mbassy.bus.MBassador;
 
-/**
- * Created by stewsters on 11/10/15.
- */
 public class Bus {
 
     public static MBassador bus;

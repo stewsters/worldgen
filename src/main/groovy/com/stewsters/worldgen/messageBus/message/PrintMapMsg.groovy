@@ -1,10 +1,7 @@
 package com.stewsters.worldgen.messageBus.message
 
-import com.stewsters.worldgen.map.OverWorld
+import com.stewsters.worldgen.map.overworld.OverWorld
 
-/**
- * Created by stewsters on 11/11/15.
- */
 public class PrintMapMsg {
     public OverWorld overWorld;
 

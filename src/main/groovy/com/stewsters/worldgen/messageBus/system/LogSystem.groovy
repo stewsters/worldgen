@@ -6,7 +6,7 @@ import net.engio.mbassy.listener.Handler
 class LogSystem {
 
     @Handler
-    public void handle(String msg){
+    public void handle(String msg) {
 
         // move the entity
         println msg

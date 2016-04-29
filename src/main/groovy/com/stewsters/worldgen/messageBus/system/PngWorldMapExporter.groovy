@@ -1,7 +1,7 @@
 package com.stewsters.worldgen.messageBus.system
 
-import com.stewsters.worldgen.map.OverWorld
-import com.stewsters.worldgen.map.OverworldChunk
+import com.stewsters.worldgen.map.overworld.OverWorld
+import com.stewsters.worldgen.map.overworld.OverWorldChunk
 import com.stewsters.worldgen.messageBus.Bus
 import net.engio.mbassy.listener.Handler
 
@@ -16,8 +16,8 @@ class PngWorldMapExporter {
 
         Bus.bus.post("Writing image").asynchronously()
 
-        int xTotal = overWorld.xSize * OverworldChunk.chunkSize;
-        int yTotal = overWorld.ySize * OverworldChunk.chunkSize;
+        int xTotal = overWorld.xSize * OverWorldChunk.chunkSize;
+        int yTotal = overWorld.ySize * OverWorldChunk.chunkSize;
 
         BufferedImage biomes = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage height = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);

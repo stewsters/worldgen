@@ -1,7 +1,7 @@
 package com.stewsters.worldgen;
 
 import com.stewsters.worldgen.messageBus.Bus;
-import com.stewsters.worldgen.screens.OverworldScreen;
+import com.stewsters.worldgen.screens.OverWorldScreen;
 import com.stewsters.worldgen.screens.Screen;
 import squidpony.squidgrid.gui.swing.SwingPane;
 
@@ -23,7 +23,7 @@ public class ApplicationMain extends JFrame implements KeyListener {
         display.initialize(RenderConfig.screenWidth, RenderConfig.screenHeight, new Font("Ariel", Font.BOLD, 12));
         add(display);
         pack();
-        screen = new OverworldScreen();
+        screen = new OverWorldScreen();
         addKeyListener(this);
         repaint();
     }

@@ -9,12 +9,12 @@ import net.engio.mbassy.listener.Handler
 class MovementSystem {
 
     @Handler
-    public void handle(MovementMsg msg){
+    public void handle(MovementMsg msg) {
 
         //find entity in array
         Leader leader = Leader.get(msg.id)
 
-        if(!leader)
+        if (!leader)
             return
 
         // move the entity
@@ -26,8 +26,8 @@ class MovementSystem {
         int fy = leader.pos.y + msg.direction.y;
 
 //        if (!overWorld.getTileType(fx, fy).blocks) {
-            leader.pos.x = fx;
-            leader.pos.y = fy;
+        leader.pos.x = fx;
+        leader.pos.y = fy;
 //        }
 
     }

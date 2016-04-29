@@ -17,7 +17,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
     compile 'com.squidpony:squidlib:1.95.1'
     compile 'commons-io:commons-io:2.4'
-    compile 'com.stewsters.util:stewsters-util:0.11'
+    compile 'com.stewsters.util:stewsters-util:0.15'
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'net.engio:mbassador:1.2.4'
