@@ -3,10 +3,12 @@ package com.stewsters.worldgen.map.overworld;
 
 import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
+import com.stewsters.util.math.Point2i;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.procGen.WorldGenerator;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 
@@ -29,14 +31,18 @@ public class OverWorld {
         worldGenerator = new WorldGenerator();
         chunks = new OverWorldChunk[xSize][ySize];
 
+        ArrayList<Point2i> coords = new ArrayList<Point2i>();
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
-                loadChunk(x, y);
+                coords.add(new Point2i(x, y));
             }
         }
 
-        // Run rivers
+        coords.parallelStream().forEach(coord ->
+                loadChunk(coord.x, coord.y)
+        );
 
+        // Run rivers
         for (int i = 0; i < 50; i++) {
             int x = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
             int y = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);

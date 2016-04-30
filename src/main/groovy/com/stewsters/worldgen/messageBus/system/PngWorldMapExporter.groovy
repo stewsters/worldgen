@@ -23,7 +23,7 @@ class PngWorldMapExporter {
         BufferedImage height = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage precip = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage temper = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
-
+        BufferedImage water = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
 
         for (int x = 0; x < xTotal; x++) {
             for (int y = 0; y < yTotal; y++) {
@@ -32,6 +32,8 @@ class PngWorldMapExporter {
 
                 float heightVal = (float) ((-overWorld.getElevation(x, y) - 1f) / 2f);
                 height.setRGB(x, y, Color.getHSBColor(heightVal, 0.5f, 0.5f).getRGB())
+
+                boolean waterVal =  overWorld.getElevation(x, y) > 0
 
                 float precipVal = (float) (overWorld.getPrecipitation(x, y));
                 precip.setRGB(x, y, Color.getHSBColor(precipVal, 0.5f, 0.5f).getRGB())

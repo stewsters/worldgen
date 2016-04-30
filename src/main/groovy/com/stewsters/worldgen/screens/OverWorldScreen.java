@@ -63,8 +63,19 @@ public class OverWorldScreen implements Screen {
                 if (overWorld.getSettlement(wx, wy) != null) {
                     display.placeCharacter(x, y, '#', SColor.AMBER);
                 } else {
+
                     BiomeType biomeType = overWorld.getTileType(wx, wy);
-                    display.placeCharacter(x, y, biomeType.character, biomeType.color);
+
+                    float diff = overWorld.getElevation(wx, wy) - overWorld.getElevation(wx, wy + 1);
+
+                    if (diff < -0.01) {
+                        display.placeCharacter(x, y, biomeType.character, biomeType.darkColor);
+                    } else if (diff > 0.01) {
+                        display.placeCharacter(x, y, biomeType.character, biomeType.brightColor);
+                    } else {
+                        display.placeCharacter(x, y, biomeType.character, biomeType.color);
+                    }
+
                 }
             }
         }

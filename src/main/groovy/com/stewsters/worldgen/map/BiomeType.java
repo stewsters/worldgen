@@ -35,12 +35,18 @@ public enum BiomeType {
 
     public final boolean blocks;
     public final SColor color;
+    public final SColor darkColor;
+    public final SColor brightColor;
+
     public final char character;
+
 
     BiomeType(boolean blocks, char character, SColor color) {
         this.blocks = blocks;
         this.character = character;
         this.color = color;
+        this.darkColor = new SColor(Math.max(color.getRed() - 20, 0), Math.max(color.getGreen() - 20, 0), Math.max(color.getBlue() - 20, 0));
+        this.brightColor = new SColor(Math.min(color.getRed() + 20, 255), Math.min(color.getGreen() + 20, 255), Math.min(color.getBlue() + 20, 255));
     }
 
     public byte id() {
