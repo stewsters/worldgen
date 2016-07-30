@@ -30,8 +30,8 @@ public class OverWorldChunk {
 
     public static final int chunkSize = 64;
 
-    public final long lowCornerX;
-    public final long lowCornerY;
+//    public final long lowCornerX;
+//    public final long lowCornerY;
 
     public float[][] elevation;
     public float[][] temperature;
@@ -49,9 +49,9 @@ public class OverWorldChunk {
 
     public Settlement[][] settlement;
 
-    public OverWorldChunk(long lowCornerX, long lowCornerY) {
-        this.lowCornerX = lowCornerX;
-        this.lowCornerY = lowCornerY;
+    public OverWorldChunk() {
+//        this.lowCornerX = lowCornerX;
+//        this.lowCornerY = lowCornerY;
 
         elevation = new float[chunkSize][chunkSize];
         temperature = new float[chunkSize][chunkSize];

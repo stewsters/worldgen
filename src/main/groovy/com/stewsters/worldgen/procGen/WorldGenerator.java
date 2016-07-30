@@ -7,6 +7,8 @@ import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import static com.stewsters.util.math.MatUtils.limit;
+
 public class WorldGenerator {
 
     private final static Logger log = Logger.getLogger(WorldGenerator.class.getName());
@@ -32,7 +34,7 @@ public class WorldGenerator {
 
         log.info("generating " + chunkX + " : " + chunkY);
 
-        OverWorldChunk overWorldChunk = new OverWorldChunk(chunkX, chunkY);
+        OverWorldChunk overWorldChunk = new OverWorldChunk();
 
         int xCenter = overWorld.xSize * OverWorldChunk.chunkSize / 2;
         int yCenter = overWorld.ySize * OverWorldChunk.chunkSize / 2;
@@ -52,15 +54,7 @@ public class WorldGenerator {
                         + 0.3 * el.eval(nx / 42.0, ny / 42.0)
                         + 0.1 * el.eval(nx / 10.0, ny / 10.0);
 
-                overWorldChunk.elevation[x][y] = Math.max(-1, Math.min(1, (float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10))));
-
-
-                // Precipitation
-                overWorldChunk.precipitation[x][y] = (float) (
-                        (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
-                                0.25 * mo.eval(nx / 45.0, ny / 45.0)
-
-                        ) / 2.f) + 0.5f;
+                overWorldChunk.elevation[x][y] = limit((float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10)), -1, 1);
 
                 // Temperature
                 //decreases with height, decreases with closeness to poles
@@ -74,11 +68,26 @@ public class WorldGenerator {
                 // Drainage
 
 
+                // This is a hack for rain shadows.  Start at your square, then go upwind
+                // warm temp on water squares boosts humidity, cold mountains limit it
+
+//                int rainshadowLength = 10;
+//                for(int xMod=0; xMod < rainshadowLength; xMod++){
+//
+//                }
+
+                // Precipitation
+                overWorldChunk.precipitation[x][y] = (float) (
+                        (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
+                                0.25 * mo.eval(nx / 45.0, ny / 45.0)
+
+                        ) / 2.f) + 0.5f;
+
+
             }
         }
         return overWorldChunk;
 
     }
-
 
 }
