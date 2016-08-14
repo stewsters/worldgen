@@ -4,12 +4,11 @@ import squidpony.squidcolor.SColor;
 
 public enum BiomeType {
 
-    RIVER(false, '~', SColor.ALICE_BLUE),
+    RIVER(false, '~', SColor.ALICE_BLUE,true),
 
-    OCEAN_ABYSSAL(false, '~', SColor.DARK_BLUE),
-    OCEAN_DEEP(false, '~', SColor.BLUE),
-    OCEAN_SHALLOW(false, '~', SColor.LIGHT_BLUE),
-
+    OCEAN_ABYSSAL(false, '~', SColor.DARK_BLUE,true),
+    OCEAN_DEEP(false, '~', SColor.BLUE,true),
+    OCEAN_SHALLOW(false, '~', SColor.LIGHT_BLUE,true),
 
     BEACH(false, '.', SColor.YELLOW),
 
@@ -32,19 +31,23 @@ public enum BiomeType {
     TROPICAL_RAIN_FOREST(false, 'T', SColor.DARK_GREEN),
     SEA_ICE(false, '_', SColor.NAVAJO_WHITE);
 
-
     public final boolean blocks;
     public final SColor color;
     public final SColor darkColor;
     public final SColor brightColor;
 
     public final char character;
+    public boolean water=false;
 
+    BiomeType(boolean blocks, char character, SColor color){
+        this(blocks,character,color,false);
+    }
 
-    BiomeType(boolean blocks, char character, SColor color) {
+    BiomeType(boolean blocks, char character, SColor color, boolean water) {
         this.blocks = blocks;
         this.character = character;
         this.color = color;
+        this.water=water;
         this.darkColor = new SColor(Math.max(color.getRed() - 20, 0), Math.max(color.getGreen() - 20, 0), Math.max(color.getBlue() - 20, 0));
         this.brightColor = new SColor(Math.min(color.getRed() + 20, 255), Math.min(color.getGreen() + 20, 255), Math.min(color.getBlue() + 20, 255));
     }

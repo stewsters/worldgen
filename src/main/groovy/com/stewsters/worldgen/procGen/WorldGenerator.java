@@ -1,6 +1,9 @@
 package com.stewsters.worldgen.procGen;
 
+import com.stewsters.util.math.Facing2d;
+import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.noise.OpenSimplexNoise;
+import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 
@@ -29,6 +32,7 @@ public class WorldGenerator {
         mo = new OpenSimplexNoise(r.nextLong());
     }
 
+    // Initial step the can be done per chunk
     public OverWorldChunk generate(OverWorld overWorld, int chunkX, int chunkY) {
 
 
@@ -58,36 +62,132 @@ public class WorldGenerator {
 
                 // Temperature
                 //decreases with height, decreases with closeness to poles
-
-
                 overWorldChunk.temperature[x][y] = 1 - Math.max(yDist, overWorldChunk.elevation[x][y])
                         - 0.4f * yDist
                         - 0.4f * overWorldChunk.elevation[x][y]
                         + 0.2f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
-
-                // Drainage
-
-
-                // This is a hack for rain shadows.  Start at your square, then go upwind
-                // warm temp on water squares boosts humidity, cold mountains limit it
-
-//                int rainshadowLength = 10;
-//                for(int xMod=0; xMod < rainshadowLength; xMod++){
-//
-//                }
-
-                // Precipitation
-                overWorldChunk.precipitation[x][y] = (float) (
-                        (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
-                                0.25 * mo.eval(nx / 45.0, ny / 45.0)
-
-                        ) / 2.f) + 0.5f;
-
 
             }
         }
         return overWorldChunk;
 
     }
+
+
+    // This is a hack for rain shadows.  Start at your square, then go upwind
+    // warm temp on water squares boosts humidity, cold mountains limit it
+    public void postLoad(OverWorld overWorld) {
+
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
+        // Precipitation
+//        overWorldChunk.precipitation[x][y] = (float) (
+//                (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
+//                        0.25 * mo.eval(nx / 45.0, ny / 45.0)
+//
+//                ) / 2.f) + 0.5f;
+
+        // rain shadow:
+        for (int y = 0; y < ySize; y++) {
+
+            float moist = 0;
+            for (int x = 0; x < xSize; x++) {
+
+                float temp = overWorld.getTemp(x, y);
+                float maximumMoistureBasedOnTemp = MatUtils.limit(temp, 0, 1);
+
+                // if we are over water, evaporate
+                if (overWorld.getTileType(x, y).water) {
+                    moist += 1;
+                }
+
+
+                float precip = 0f;
+
+                // Rainfall due to temp
+                if (moist > maximumMoistureBasedOnTemp) {
+                    float rain = (moist - maximumMoistureBasedOnTemp);
+                    moist -= rain / 15f;
+                    precip += rain;
+                }
+
+
+                precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
+                        0.25 * mo.eval(x / 45.0, y / 45.0))) * 0.5;
+
+                overWorld.setPrecipitation(x, y, precip);
+
+            }
+        }
+
+        //
+
+
+        // Run rivers
+        for (int i = 0; i < 50; i++) {
+            int x = MatUtils.getIntInRange(0, xSize);
+            int y = MatUtils.getIntInRange(0, ySize);
+            boolean done = false;
+
+            while (!done) {
+
+                BiomeType existingType = overWorld.getTileType(x, y);
+                if (existingType == BiomeType.OCEAN_ABYSSAL || existingType == BiomeType.OCEAN_DEEP || existingType == BiomeType.OCEAN_SHALLOW) {
+                    break;
+                }
+
+                // if the biome is ocean or frozen then end.
+                Facing2d facing = null;
+                float height = overWorld.getElevation(x, y);
+
+                if (height > overWorld.getElevation(x, y + 1)) {
+                    facing = Facing2d.NORTH;
+                    height = overWorld.getElevation(x, y + 1);
+                }
+
+                if (height > overWorld.getElevation(x, y - 1)) {
+                    facing = Facing2d.SOUTH;
+                    height = overWorld.getElevation(x, y - 1);
+                }
+
+                if (height > overWorld.getElevation(x + 1, y)) {
+                    facing = Facing2d.EAST;
+                    height = overWorld.getElevation(x + 1, y);
+                }
+
+                if (height > overWorld.getElevation(x - 1, y)) {
+                    facing = Facing2d.WEST;
+                    height = overWorld.getElevation(x - 1, y);
+                }
+
+                if (facing == null) {
+                    done = true;
+                } else {
+                    overWorld.setRiver(x, y);
+
+                    x = x + facing.x;
+                    y = y + facing.y;
+                }
+
+            }
+
+
+        }
+
+        // Build Settlements
+        for (int i = 0; i < 100; i++) {
+            int x = MatUtils.getIntInRange(0, xSize);
+            int y = MatUtils.getIntInRange(0, ySize);
+
+            if (!overWorld.getTileType(x, y).name().startsWith("OCEAN")) {
+                overWorld.buildSettlement(x, y);
+            }
+
+        }
+
+
+    }
+
 
 }

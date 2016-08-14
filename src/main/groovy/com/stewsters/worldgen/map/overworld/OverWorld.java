@@ -1,8 +1,6 @@
 package com.stewsters.worldgen.map.overworld;
 
 
-import com.stewsters.util.math.Facing2d;
-import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
@@ -38,77 +36,24 @@ public class OverWorld {
             }
         }
 
+        // This pregens the whole world.
         coords.parallelStream().forEach(coord ->
                 loadChunk(coord.x, coord.y)
         );
 
-        // Run rivers
-        for (int i = 0; i < 50; i++) {
-            int x = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
-            int y = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
-            boolean done = false;
-
-            while (!done) {
-
-                BiomeType existingType = getTileType(x, y);
-                if (existingType == BiomeType.OCEAN_ABYSSAL || existingType == BiomeType.OCEAN_DEEP || existingType == BiomeType.OCEAN_SHALLOW) {
-                    break;
-                }
-
-                // if the biome is ocean or frozen then end.
-                Facing2d facing = null;
-                float height = getElevation(x, y);
-
-                if (height > getElevation(x, y + 1)) {
-                    facing = Facing2d.NORTH;
-                    height = getElevation(x, y + 1);
-                }
-
-                if (height > getElevation(x, y - 1)) {
-                    facing = Facing2d.SOUTH;
-                    height = getElevation(x, y - 1);
-                }
-
-                if (height > getElevation(x + 1, y)) {
-                    facing = Facing2d.EAST;
-                    height = getElevation(x + 1, y);
-                }
-
-                if (height > getElevation(x - 1, y)) {
-                    facing = Facing2d.WEST;
-                    height = getElevation(x - 1, y);
-                }
-
-                if (facing == null) {
-                    done = true;
-                } else {
-                    setRiver(x, y);
-
-                    x = x + facing.x;
-                    y = y + facing.y;
-                }
-
-            }
-
-
-        }
-
-        // Build Settlements
-        for (int i = 0; i < 100; i++) {
-            int x = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
-            int y = MatUtils.getIntInRange(0, xSize * OverWorldChunk.chunkSize - 1);
-
-            if (!getTileType(x, y).name().startsWith("OCEAN")) {
-                buildSettlement(x, y);
-            }
-
-        }
-
-
+        worldGenerator.postLoad(this);
     }
 
     public void update() {
 
+    }
+
+    public int getPreciseXSize() {
+        return xSize * OverWorldChunk.chunkSize - 1;
+    }
+
+    public int getPreciseYSize() {
+        return ySize * OverWorldChunk.chunkSize - 1;
     }
 
 
@@ -162,12 +107,6 @@ public class OverWorld {
     }
 
 
-    private void setRiver(int globalX, int globalY) {
-        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
-        if (chunk != null)
-            chunk.river[getPrecise(globalX)][getPrecise(globalY)] = true;
-    }
-
     public float getLatitude(int globalY) {
         int yCenter = ySize * OverWorldChunk.chunkSize / 2;
         return (float) (globalY - yCenter) / yCenter;
@@ -177,16 +116,6 @@ public class OverWorld {
         int xCenter = xSize * OverWorldChunk.chunkSize / 2;
         return (float) (globalX - xCenter) / xCenter;
     }
-
-    private void buildSettlement(int globalX, int globalY) {
-
-        Settlement settlement = Settlement.build(globalX, globalY);
-
-        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
-
-        chunk.settlement[getPrecise(globalX)][getPrecise(globalY)] = settlement;
-    }
-
 
     private OverWorldChunk loadChunk(int chunkX, int chunkY) {
 
@@ -202,11 +131,34 @@ public class OverWorld {
         return loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
     }
 
+    public void setRiver(int globalX, int globalY) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.river[getPrecise(globalX)][getPrecise(globalY)] = true;
+    }
+
+    public void buildSettlement(int globalX, int globalY) {
+
+        Settlement settlement = Settlement.build(globalX, globalY);
+
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+
+        chunk.settlement[getPrecise(globalX)][getPrecise(globalY)] = settlement;
+    }
+
     public Settlement getSettlement(int globalX, int globalY) {
         OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
         if (chunk == null)
             return null;
 
         return chunk.settlement[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public void setPrecipitation(int globalX, int globalY, float precip) {
+
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)] = precip;
+
     }
 }

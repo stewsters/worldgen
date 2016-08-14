@@ -1,5 +1,6 @@
 package com.stewsters.worldgen.messageBus.system
 
+import com.stewsters.util.math.MatUtils
 import com.stewsters.worldgen.map.overworld.OverWorld
 import com.stewsters.worldgen.map.overworld.OverWorldChunk
 import com.stewsters.worldgen.messageBus.Bus
@@ -28,18 +29,20 @@ class PngWorldMapExporter {
         for (int x = 0; x < xTotal; x++) {
             for (int y = 0; y < yTotal; y++) {
 
+                boolean waterVal = overWorld.getElevation(x, y) > 0
+
                 biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
 
+                float sat = waterVal ? 0.8f : 0.2f
+
                 float heightVal = (float) ((-overWorld.getElevation(x, y) - 1f) / 2f);
-                height.setRGB(x, y, Color.getHSBColor(heightVal, 0.5f, 0.5f).getRGB())
+                height.setRGB(x, y, Color.getHSBColor(heightVal, sat, 0.5f).getRGB())
 
-                boolean waterVal =  overWorld.getElevation(x, y) > 0
-
-                float precipVal = (float) (overWorld.getPrecipitation(x, y));
-                precip.setRGB(x, y, Color.getHSBColor(precipVal, 0.5f, 0.5f).getRGB())
+                float precipVal = (float) (MatUtils.limit(overWorld.getPrecipitation(x, y)/2f, 0, 1));
+                precip.setRGB(x, y, Color.getHSBColor(precipVal, sat, 0.5f).getRGB())
 
                 float tempVal = (float) ((-overWorld.getTemp(x, y) - 1f) / 2f);
-                temper.setRGB(x, y, Color.getHSBColor(tempVal, 0.5f, 0.5f).getRGB())
+                temper.setRGB(x, y, Color.getHSBColor(tempVal, sat, 0.5f).getRGB())
 
             }
         }
