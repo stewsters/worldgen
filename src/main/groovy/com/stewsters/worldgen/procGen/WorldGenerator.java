@@ -54,9 +54,9 @@ public class WorldGenerator {
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
                 // Elevation - decreases near edges
-                double elevation = 0.6 * el.eval(nx / 120.0, ny / 120.0)
-                        + 0.3 * el.eval(nx / 42.0, ny / 42.0)
-                        + 0.1 * el.eval(nx / 10.0, ny / 10.0);
+                double elevation = 0.6 * el.eval(nx / 240.0 / 64 * overWorld.xSize, ny / 240.0 / 32 * overWorld.ySize)
+                        + 0.3 * el.eval(nx / 84.0 / 64 * overWorld.xSize, ny / 84.0 / 32 * overWorld.ySize)
+                        + 0.1 * el.eval(nx / 20.0 / 64 * overWorld.xSize, ny / 20.0 / 32 * overWorld.ySize);
 
                 overWorldChunk.elevation[x][y] = limit((float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10)), -1, 1);
 
@@ -66,7 +66,6 @@ public class WorldGenerator {
                         - 0.4f * yDist
                         - 0.4f * overWorldChunk.elevation[x][y]
                         + 0.2f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
-
             }
         }
         return overWorldChunk;
@@ -81,12 +80,25 @@ public class WorldGenerator {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
 
-        // Precipitation
-//        overWorldChunk.precipitation[x][y] = (float) (
-//                (0.75 * mo.eval(nx / 70.0, ny / 70.0) +
-//                        0.25 * mo.eval(nx / 45.0, ny / 45.0)
-//
-//                ) / 2.f) + 0.5f;
+
+        float periods = 4;
+        for (int y = 0; y < ySize; y++) {
+
+            float percentage = (float) y / ySize;
+            float globalWindX = (float) Math.cos(periods * (2 * Math.PI) * percentage);
+//            if (y >= ySize / 2)
+//                globalWindX *= -1;
+
+            for (int x = 0; x < xSize; x++) {
+                float xd = overWorld.getTemp(x, y) - overWorld.getTemp(x + 1, y);
+                float yd = overWorld.getTemp(x, y) - overWorld.getTemp(x, y + 1);
+
+
+                // Rotate 90 degrees
+//                overWorld.setWind(x, y, xd, yd);
+                overWorld.setWind(x, y, yd + (0.01f * globalWindX), -xd + (0.01f * globalWindX));
+            }
+        }
 
         // rain shadow:
         for (int y = 0; y < ySize; y++) {
@@ -113,6 +125,7 @@ public class WorldGenerator {
                 }
 
 
+                // This is a random
                 precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
                         0.25 * mo.eval(x / 45.0, y / 45.0))) * 0.5;
 
@@ -120,9 +133,6 @@ public class WorldGenerator {
 
             }
         }
-
-        //
-
 
         // Run rivers
         for (int i = 0; i < 50; i++) {
@@ -171,8 +181,6 @@ public class WorldGenerator {
                 }
 
             }
-
-
         }
 
         // Build Settlements
@@ -183,11 +191,6 @@ public class WorldGenerator {
             if (!overWorld.getTileType(x, y).name().startsWith("OCEAN")) {
                 overWorld.buildSettlement(x, y);
             }
-
         }
-
-
     }
-
-
 }

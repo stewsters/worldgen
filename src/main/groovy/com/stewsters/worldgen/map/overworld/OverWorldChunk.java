@@ -1,6 +1,5 @@
 package com.stewsters.worldgen.map.overworld;
 
-import com.stewsters.worldgen.game.Leader;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 
@@ -26,18 +25,15 @@ import static com.stewsters.worldgen.map.BiomeType.TUNDRA;
 
 public class OverWorldChunk {
 
-    public Leader leader = null;
-
     public static final int chunkSize = 64;
-
-//    public final long lowCornerX;
-//    public final long lowCornerY;
 
     public float[][] elevation;
     public float[][] temperature;
     public float[][] precipitation;
     public float[][] drainage;
 
+    public float[][] windX;
+    public float[][] windY;
 
     // TODO: sunlight - angle of terrain can reduce it.  It effects temp and plant types
     // TODO: Moisture should be generated from warm water.  It should create pressure and move to low pressure
@@ -58,6 +54,9 @@ public class OverWorldChunk {
         precipitation = new float[chunkSize][chunkSize];
         drainage = new float[chunkSize][chunkSize];
 
+        windX = new float[chunkSize][chunkSize];
+        windY = new float[chunkSize][chunkSize];
+
         river = new boolean[chunkSize][chunkSize];
         settlement = new Settlement[chunkSize][chunkSize];
 
@@ -67,6 +66,10 @@ public class OverWorldChunk {
                 temperature[x][y] = 0f;
                 precipitation[x][y] = 0f;
                 drainage[x][y] = 0f;
+
+                windX[x][y] = 0f;
+                windY[x][y] = 0f;
+
                 river[x][y] = false;
                 settlement[x][y] = null;
             }
@@ -81,6 +84,11 @@ public class OverWorldChunk {
     }
 
 
+    // Tree Line - highest survivable trees
+    // 4000 near the equator, 2000 near the poles
+
+    //timberline - Highest cannopy - forest
+
     //   Simplified biome chart: http://imgur.com/kM8b5Zq
     private BiomeType biome(double e, double t, double p) {
 
@@ -89,7 +97,10 @@ public class OverWorldChunk {
         if (e < -0.75) return OCEAN_ABYSSAL;
         if (e < -0.05) return OCEAN_DEEP;
         if (e < 0.0) return OCEAN_SHALLOW;
-        if (e < 0.01) return BEACH;
+        if (e < 0.01) {
+            if (t < 0) return SNOW;
+            return BEACH;
+        }
 
         if (t < 0) {
             if (p < 0.1) return SCORCHED;

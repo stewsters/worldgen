@@ -24,7 +24,7 @@ public class OverWorldScreen implements Screen {
         screenWidth = 80;
         screenHeight = 40;
 
-        overWorld = new OverWorld(64, 32);
+        overWorld = new OverWorld(32, 16);
         player = Leader.build(
                 overWorld.xSize * OverWorldChunk.chunkSize / 2,
                 overWorld.ySize * OverWorldChunk.chunkSize / 2

@@ -161,4 +161,27 @@ public class OverWorld {
             chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)] = precip;
 
     }
+
+    public void setWind(int globalX, int globalY, float xFlow, float yFlow) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null) {
+            chunk.windX[getPrecise(globalX)][getPrecise(globalY)] = xFlow;
+            chunk.windY[getPrecise(globalX)][getPrecise(globalY)] = yFlow;
+        }
+    }
+
+    public float getWindX(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return -1f;
+        return chunk.windX[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public float getWindY(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return -1f;
+        return chunk.windY[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
 }
