@@ -30,29 +30,31 @@ class PngWorldMapExporter {
 
         for (int x = 0; x < xTotal; x++) {
             for (int y = 0; y < yTotal; y++) {
-
-                boolean waterVal = overWorld.getElevation(x, y) > 0
-
-                biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
-
-                float sat = waterVal ? 0.8f : 0.2f
-
-                float heightVal = (float) ((-overWorld.getElevation(x, y) - 1f) / 2f);
-                height.setRGB(x, y, Color.getHSBColor(heightVal, sat, 0.5f).getRGB())
-
-                float precipVal = (float) (MatUtils.limit(overWorld.getPrecipitation(x, y) / 2f, 0, 1));
-                precip.setRGB(x, y, Color.getHSBColor(precipVal, sat, 0.5f).getRGB())
-
-                float tempVal = (float) ((-overWorld.getTemp(x, y) - 1f) / 2f);
-                temper.setRGB(x, y, Color.getHSBColor(tempVal, sat, 0.5f).getRGB())
-
                 try {
+                    float elevation = overWorld.getElevation(x, y)
+
+                    boolean waterVal = elevation > 0
+
+                    biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
+
+                    float sat = waterVal ? 0.8f : 0.2f
+
+                    float heightVal = (float) ((- elevation - 1f) / 2f);
+                    height.setRGB(x, y, Color.getHSBColor(heightVal, sat, 0.5f).getRGB())
+
+                    float precipVal = (float) (MatUtils.limit(overWorld.getPrecipitation(x, y) / 2f, 0, 1));
+                    precip.setRGB(x, y, Color.getHSBColor(precipVal, sat, 0.5f).getRGB())
+
+                    float tempVal = (float) ((-overWorld.getTemp(x, y) - 1f) / 2f);
+                    temper.setRGB(x, y, Color.getHSBColor(tempVal, sat, 0.5f).getRGB())
+
+
                     float windX = overWorld.getWindX(x, y)
                     float windY = overWorld.getWindY(x, y)
                     double length = Math.sqrt(windX * windX + windY * windY);
 
-                    float windXScaled = MatUtils.limit((float) (windX / length), 0, 1);
-                    float windYScaled = MatUtils.limit((float) (windY / length), 0, 1);
+                    float windXScaled = MatUtils.limit((float) ((windX / length) + 1) / 2f, 0, 1);
+                    float windYScaled = MatUtils.limit((float) ((windY / length) + 1) / 2f, 0, 1);
 
                     wind.setRGB(x, y, new Color(windXScaled, windYScaled, 0f).getRGB())
 

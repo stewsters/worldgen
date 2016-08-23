@@ -81,6 +81,8 @@ public class WorldGenerator {
         int ySize = overWorld.getPreciseYSize();
 
 
+        // Cliffyness / Grade
+
         float periods = 4;
         for (int y = 0; y < ySize; y++) {
 
@@ -90,13 +92,13 @@ public class WorldGenerator {
 //                globalWindX *= -1;
 
             for (int x = 0; x < xSize; x++) {
-                float xd = overWorld.getTemp(x, y) - overWorld.getTemp(x + 1, y);
-                float yd = overWorld.getTemp(x, y) - overWorld.getTemp(x, y + 1);
-
+                float temp = overWorld.getTemp(x, y);
+                float xd = temp - overWorld.getTemp(x + 1, y);
+                float yd = temp - overWorld.getTemp(x, y + 1);
 
                 // Rotate 90 degrees
 //                overWorld.setWind(x, y, xd, yd);
-                overWorld.setWind(x, y, yd + (0.01f * globalWindX), -xd + (0.01f * globalWindX));
+                overWorld.setWind(x, y, yd + (0.005f * globalWindX), -xd + (0.005f * globalWindX));
             }
         }
 
