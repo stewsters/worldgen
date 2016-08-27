@@ -39,13 +39,13 @@ class PngWorldMapExporter {
 
                     float sat = waterVal ? 0.8f : 0.2f
 
-                    float heightVal = (float) ((- elevation - 1f) / 2f);
+                    float heightVal = (float) ((elevation + 1f) / -2f);
                     height.setRGB(x, y, Color.getHSBColor(heightVal, sat, 0.5f).getRGB())
 
                     float precipVal = (float) (MatUtils.limit(overWorld.getPrecipitation(x, y) / 2f, 0, 1));
                     precip.setRGB(x, y, Color.getHSBColor(precipVal, sat, 0.5f).getRGB())
 
-                    float tempVal = (float) ((-overWorld.getTemp(x, y) - 1f) / 2f);
+                    float tempVal = (float) ((overWorld.getTemp(x, y) + 1f) / -2f);
                     temper.setRGB(x, y, Color.getHSBColor(tempVal, sat, 0.5f).getRGB())
 
 
