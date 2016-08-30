@@ -41,6 +41,7 @@ public class OverWorld {
                 loadChunk(coord.x, coord.y)
         );
 
+        worldGenerator.evenElevation(this);
         worldGenerator.postLoad(this);
     }
 
@@ -155,11 +156,9 @@ public class OverWorld {
     }
 
     public void setPrecipitation(int globalX, int globalY, float precip) {
-
         OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
         if (chunk != null)
             chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)] = precip;
-
     }
 
     public void setWind(int globalX, int globalY, float xFlow, float yFlow) {
@@ -184,4 +183,9 @@ public class OverWorld {
         return chunk.windY[getPrecise(globalX)][getPrecise(globalY)];
     }
 
+    public void setElevation(int globalX, int globalY, float elevation) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
+    }
 }

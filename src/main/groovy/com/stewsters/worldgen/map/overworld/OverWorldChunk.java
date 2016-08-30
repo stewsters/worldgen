@@ -37,7 +37,6 @@ public class OverWorldChunk {
 
     // TODO: sunlight - angle of terrain can reduce it.  It effects temp and plant types
     // TODO: Moisture should be generated from warm water.  It should create pressure and move to low pressure
-    // TODO: Coriolis Effect. If sun raises in the east, general air current should go to the east
 
     // The north sides of mountains may have a different biome then the south sides.
 
@@ -46,8 +45,6 @@ public class OverWorldChunk {
     public Settlement[][] settlement;
 
     public OverWorldChunk() {
-//        this.lowCornerX = lowCornerX;
-//        this.lowCornerY = lowCornerY;
 
         elevation = new float[chunkSize][chunkSize];
         temperature = new float[chunkSize][chunkSize];
@@ -87,7 +84,7 @@ public class OverWorldChunk {
     // Tree Line - highest survivable trees
     // 4000 near the equator, 2000 near the poles
 
-    //timberline - Highest cannopy - forest
+    //timberline - Highest canopy - forest
 
     //   Simplified biome chart: http://imgur.com/kM8b5Zq
     private BiomeType biome(double e, double t, double p) {
@@ -100,6 +97,10 @@ public class OverWorldChunk {
         if (e < 0.01) {
             if (t < 0) return SNOW;
             return BEACH;
+        }
+
+        if (e > 0.7) { // treeline
+            return SNOW;
         }
 
         if (t < 0) {

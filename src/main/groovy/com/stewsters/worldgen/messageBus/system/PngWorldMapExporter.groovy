@@ -51,11 +51,9 @@ class PngWorldMapExporter {
 
                     float windX = overWorld.getWindX(x, y)
                     float windY = overWorld.getWindY(x, y)
-                    double length = Math.sqrt(windX * windX + windY * windY);
 
-                    float windXScaled = MatUtils.limit((float) ((windX / length) + 1) / 2f, 0, 1);
-                    float windYScaled = MatUtils.limit((float) ((windY / length) + 1) / 2f, 0, 1);
-
+                    float windXScaled = MatUtils.limit((windX + 1) / 2f, 0, 1);
+                    float windYScaled = MatUtils.limit((windY + 1) / 2f, 0, 1);
                     wind.setRGB(x, y, new Color(windXScaled, windYScaled, 0f).getRGB())
 
                 } catch (Exception e) {

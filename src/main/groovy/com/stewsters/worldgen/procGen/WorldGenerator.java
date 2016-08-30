@@ -69,7 +69,35 @@ public class WorldGenerator {
             }
         }
         return overWorldChunk;
+    }
 
+
+    public void evenElevation(OverWorld overWorld) {
+
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
+        float highest = -1f;
+        float lowest = 1f;
+
+        for (int y = 0; y < ySize; y++) {
+            for (int x = 0; x < xSize; x++) {
+                float elev = overWorld.getElevation(x, y);
+                if (elev < lowest)
+                    lowest = elev;
+                if (elev > highest)
+                    highest = elev;
+            }
+        }
+
+        float mult = (highest - lowest) / 2f;
+
+        for (int y = 0; y < ySize; y++) {
+            for (int x = 0; x < xSize; x++) {
+                float elev = overWorld.getElevation(x, y);
+                overWorld.setElevation(x, y, (elev * mult) - (1 - lowest));
+            }
+        }
     }
 
 
@@ -98,7 +126,21 @@ public class WorldGenerator {
 
                 // Rotate 90 degrees
 //                overWorld.setWind(x, y, xd, yd);
-                overWorld.setWind(x, y, yd + (0.005f * globalWindX), -xd + (0.005f * globalWindX));
+
+                float windX = yd;
+                float windY = -xd;
+
+//                double length = Math.sqrt(windX * windX + windY * windY);
+//                if (length > 0.0001) {
+//                    windX = (float) (windX / length);
+//                    windY = (float) (windY / length);
+//                }
+
+
+                windX = (100f * windX) - (0.5f * globalWindX);
+                windY = (100f * windY) + (0.5f * globalWindX);
+
+                overWorld.setWind(x, y, windX, windY);
             }
         }
 
@@ -116,7 +158,6 @@ public class WorldGenerator {
                     moist += 1;
                 }
 
-
                 float precip = 0f;
 
                 // Rainfall due to temp
@@ -125,7 +166,6 @@ public class WorldGenerator {
                     moist -= rain / 15f;
                     precip += rain;
                 }
-
 
                 // This is a random
                 precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
