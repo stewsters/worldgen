@@ -36,18 +36,24 @@ public class OverWorld {
             }
         }
 
-        // This pregens the whole world.
+        // Generate elevation
         coords.parallelStream().forEach(coord ->
-                loadChunk(coord.x, coord.y)
+                chunks[coord.x][coord.y] = worldGenerator.generateChunkedHeightMap(this, coord.x, coord.y)
+        );
+        worldGenerator.evenElevation(this);
+
+        // Generate temperature based on that elevation
+        coords.parallelStream().forEach(coord ->
+                chunks[coord.x][coord.y] = worldGenerator.generateChunkedTemperatureMap(this, coord.x, coord.y)
         );
 
-        worldGenerator.evenElevation(this);
-        worldGenerator.postLoad(this);
+        worldGenerator.generateWind(this);
+        worldGenerator.generatePrecipitation(this);
+
+        worldGenerator.generateRivers(this);
+        worldGenerator.populateSettlements(this);
     }
 
-    public void update() {
-
-    }
 
     public int getPreciseXSize() {
         return xSize * OverWorldChunk.chunkSize - 1;
@@ -118,12 +124,13 @@ public class OverWorld {
         return (float) (globalX - xCenter) / xCenter;
     }
 
-    private OverWorldChunk loadChunk(int chunkX, int chunkY) {
+    public OverWorldChunk loadChunk(int chunkX, int chunkY) {
 
         if (chunkX < 0 || chunkX >= xSize || chunkY < 0 || chunkY >= ySize) {
             return null;
         } else if (chunks[chunkX][chunkY] == null) {
-            chunks[chunkX][chunkY] = worldGenerator.generate(this, chunkX, chunkY);
+            // TODO: load from disk
+            throw new RuntimeException("Nope, loading not implemented yet");
         }
         return chunks[chunkX][chunkY];
     }
@@ -186,6 +193,7 @@ public class OverWorld {
     public void setElevation(int globalX, int globalY, float elevation) {
         OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
         if (chunk != null)
-            chunk.precipitation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
+            chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
     }
+
 }

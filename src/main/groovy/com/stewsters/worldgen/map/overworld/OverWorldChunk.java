@@ -94,13 +94,14 @@ public class OverWorldChunk {
         if (e < -0.75) return OCEAN_ABYSSAL;
         if (e < -0.05) return OCEAN_DEEP;
         if (e < 0.0) return OCEAN_SHALLOW;
-        if (e < 0.01) {
-            if (t < 0) return SNOW;
-            return BEACH;
+
+        if (t < 0) return SNOW;
+        if (e > 0.7) { // Above Treeline
+            return BARE;
         }
 
-        if (e > 0.7) { // treeline
-            return SNOW;
+        if (e < 0.01) {
+            return BEACH;
         }
 
         if (t < 0) {

@@ -142,7 +142,6 @@ public class OverWorldScreen implements Screen {
                 Bus.bus.post(overWorld).asynchronously();
                 break;
         }
-        overWorld.update();
 
         return this;
     }

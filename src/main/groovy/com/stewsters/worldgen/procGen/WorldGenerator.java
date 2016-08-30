@@ -33,10 +33,9 @@ public class WorldGenerator {
     }
 
     // Initial step the can be done per chunk
-    public OverWorldChunk generate(OverWorld overWorld, int chunkX, int chunkY) {
+    public OverWorldChunk generateChunkedHeightMap(OverWorld overWorld, int chunkX, int chunkY) {
 
-
-        log.info("generating " + chunkX + " : " + chunkY);
+        log.info("Generating Height " + chunkX + " : " + chunkY);
 
         OverWorldChunk overWorldChunk = new OverWorldChunk();
 
@@ -58,14 +57,34 @@ public class WorldGenerator {
                         + 0.3 * el.eval(nx / 84.0 / 64 * overWorld.xSize, ny / 84.0 / 32 * overWorld.ySize)
                         + 0.1 * el.eval(nx / 20.0 / 64 * overWorld.xSize, ny / 20.0 / 32 * overWorld.ySize);
 
-                overWorldChunk.elevation[x][y] = limit((float) (elevation - Math.pow(yDist, 10) - Math.pow(xDist, 10)), -1, 1);
+                overWorldChunk.elevation[x][y] = limit(
+                        (float) (elevation - Math.pow(yDist, 4) - Math.pow(xDist, 4)),
+                        -1, 1);
+            }
+        }
+        return overWorldChunk;
+    }
+
+    public OverWorldChunk generateChunkedTemperatureMap(OverWorld overWorld, int chunkX, int chunkY) {
+
+        OverWorldChunk overWorldChunk = overWorld.loadChunk(chunkX, chunkY);
+        int yCenter = overWorld.ySize * OverWorldChunk.chunkSize / 2;
+
+        for (int x = 0; x < OverWorldChunk.chunkSize; x++) {
+            for (int y = 0; y < OverWorldChunk.chunkSize; y++) {
+
+                int nx = chunkX * OverWorldChunk.chunkSize + x;
+                int ny = chunkY * OverWorldChunk.chunkSize + y;
+
+                float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
                 // Temperature
                 //decreases with height, decreases with closeness to poles
-                overWorldChunk.temperature[x][y] = 1 - Math.max(yDist, overWorldChunk.elevation[x][y])
-                        - 0.4f * yDist
-                        - 0.4f * overWorldChunk.elevation[x][y]
-                        + 0.2f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0);
+                overWorldChunk.temperature[x][y] = MatUtils.limit(
+                        1 - yDist
+                                - Math.max(0f, overWorldChunk.elevation[x][y])
+                                + 0.1f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0),
+                        -1, 1);
             }
         }
         return overWorldChunk;
@@ -90,34 +109,25 @@ public class WorldGenerator {
             }
         }
 
-        float mult = (highest - lowest) / 2f;
-
         for (int y = 0; y < ySize; y++) {
             for (int x = 0; x < xSize; x++) {
                 float elev = overWorld.getElevation(x, y);
-                overWorld.setElevation(x, y, (elev * mult) - (1 - lowest));
+                elev = 2 * (elev - lowest) / (highest - lowest) - 1;
+                overWorld.setElevation(x, y, elev);
             }
         }
     }
 
 
-    // This is a hack for rain shadows.  Start at your square, then go upwind
-    // warm temp on water squares boosts humidity, cold mountains limit it
-    public void postLoad(OverWorld overWorld) {
-
+    public void generateWind(OverWorld overWorld) {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
-
-
-        // Cliffyness / Grade
 
         float periods = 4;
         for (int y = 0; y < ySize; y++) {
 
             float percentage = (float) y / ySize;
             float globalWindX = (float) Math.cos(periods * (2 * Math.PI) * percentage);
-//            if (y >= ySize / 2)
-//                globalWindX *= -1;
 
             for (int x = 0; x < xSize; x++) {
                 float temp = overWorld.getTemp(x, y);
@@ -125,17 +135,8 @@ public class WorldGenerator {
                 float yd = temp - overWorld.getTemp(x, y + 1);
 
                 // Rotate 90 degrees
-//                overWorld.setWind(x, y, xd, yd);
-
                 float windX = yd;
                 float windY = -xd;
-
-//                double length = Math.sqrt(windX * windX + windY * windY);
-//                if (length > 0.0001) {
-//                    windX = (float) (windX / length);
-//                    windY = (float) (windY / length);
-//                }
-
 
                 windX = (100f * windX) - (0.5f * globalWindX);
                 windY = (100f * windY) + (0.5f * globalWindX);
@@ -143,6 +144,13 @@ public class WorldGenerator {
                 overWorld.setWind(x, y, windX, windY);
             }
         }
+    }
+
+    // This is a hack for rain shadows.  Start at your square, then go upwind
+    // warm temp on water squares boosts humidity, cold mountains limit it
+    public void generatePrecipitation(OverWorld overWorld) {
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
 
         // rain shadow:
         for (int y = 0; y < ySize; y++) {
@@ -176,7 +184,24 @@ public class WorldGenerator {
             }
         }
 
-        // Run rivers
+    }
+
+    // Run rivers
+
+    /**
+     *  Precipitation should flow down grade to the sea
+     *  Anywhere there is a significant flow should be marked as a river
+     *
+     *  Areas with enough flow can dig out a canyon.
+     *
+     *  May need to floodfill a lake if we get to a local minima
+     *
+     * @param overWorld
+     */
+    public void generateRivers(OverWorld overWorld) {
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
         for (int i = 0; i < 50; i++) {
             int x = MatUtils.getIntInRange(0, xSize);
             int y = MatUtils.getIntInRange(0, ySize);
@@ -224,6 +249,21 @@ public class WorldGenerator {
 
             }
         }
+    }
+
+
+    /**
+     *  Build Settlements
+     *
+     *  Human settlements should be built near a source of water, preferably a river.
+     *  Most should be built at a low elevation
+     *  Generating a good distance from other towns
+     *
+     * @param overWorld
+     */
+    public void populateSettlements(OverWorld overWorld) {
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
 
         // Build Settlements
         for (int i = 0; i < 100; i++) {
