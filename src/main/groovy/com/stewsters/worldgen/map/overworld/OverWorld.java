@@ -196,4 +196,7 @@ public class OverWorld {
             chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
     }
 
+    public boolean contains(int globalX, int globalY) {
+        return  !(globalX<0 || globalY<0 || globalX > xSize * OverWorldChunk.chunkSize|| globalY > ySize * OverWorldChunk.chunkSize);
+    }
 }

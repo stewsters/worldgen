@@ -152,46 +152,79 @@ public class WorldGenerator {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
 
-        // rain shadow:
-        for (int y = 0; y < ySize; y++) {
 
-            float moist = 0;
-            for (int x = 0; x < xSize; x++) {
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
 
-                float temp = overWorld.getTemp(x, y);
-                float maximumMoistureBasedOnTemp = MatUtils.limit(temp, 0, 1);
+                float tempX = x;
+                float tempY = y;
 
-                // if we are over water, evaporate
-                if (overWorld.getTileType(x, y).water) {
-                    moist += maximumMoistureBasedOnTemp;
+                float maxDistance = 100f;
+
+                while (maxDistance > 0) {
+
+                    if (!overWorld.contains((int)tempX, (int)tempY)) break;
+
+                    BiomeType bt = overWorld.getTileType((int)tempX, (int)tempY);
+                    if (bt.water) break;
+
+
+                    maxDistance -= 0.1f;
+
+                    float windX = overWorld.getWindX((int)tempX, (int)tempY);
+                    float windY = overWorld.getWindY((int)tempX, (int)tempY);
+
+//
+//                    if (Math.abs(windX) > Math.abs(windY)) {
+//                        nextX = (windX > 0) ? 1 : -1;
+//                    } else {
+//                        nextY = (windY > 0) ? 1 : -1;
+//                    }
+
+                    tempX += windX;
+                    tempY += windY;
                 }
 
-                // Rainfall due to temp
-                if (moist > maximumMoistureBasedOnTemp) {
-                    float rain = (moist - maximumMoistureBasedOnTemp);
-                    moist -= rain;
-                }
-
-                // This is a random
-//                precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
-//                        0.25 * mo.eval(x / 45.0, y / 45.0))) * 0.5;
-
-                overWorld.setPrecipitation(x, y, moist);
-
+                overWorld.setPrecipitation(x, y, maxDistance / 100f);
             }
         }
+
+
+        // rain shadow:
+//        for (int y = 0; y < ySize; y++) {
+//
+//            float moist = 0;
+//            for (int x = 0; x < xSize; x++) {
+//
+//                float temp = overWorld.getTemp(x, y);
+//                float maximumMoistureBasedOnTemp = MatUtils.limit(temp, 0, 1);
+//
+//                // if we are over water, evaporate
+//                if (overWorld.getTileType(x, y).water) {
+//                    moist += maximumMoistureBasedOnTemp;
+//                }
+//
+//                // Rainfall due to temp
+//                if (moist > maximumMoistureBasedOnTemp) {
+//                    float rain = (moist - maximumMoistureBasedOnTemp);
+//                    moist -= rain;
+//                }
+//                overWorld.setPrecipitation(x, y, moist);
+//
+//            }
+//        }
 
     }
 
     // Run rivers
 
     /**
-     *  Precipitation should flow down grade to the sea
-     *  Anywhere there is a significant flow should be marked as a river
-     *
-     *  Areas with enough flow can dig out a canyon.
-     *
-     *  May need to floodfill a lake if we get to a local minima
+     * Precipitation should flow down grade to the sea
+     * Anywhere there is a significant flow should be marked as a river
+     * <p>
+     * Areas with enough flow can dig out a canyon.
+     * <p>
+     * May need to floodfill a lake if we get to a local minima
      *
      * @param overWorld
      */
@@ -250,11 +283,11 @@ public class WorldGenerator {
 
 
     /**
-     *  Build Settlements
-     *
-     *  Human settlements should be built near a source of water, preferably a river.
-     *  Most should be built at a low elevation
-     *  Generating a good distance from other towns
+     * Build Settlements
+     * <p>
+     * Human settlements should be built near a source of water, preferably a river.
+     * Most should be built at a low elevation
+     * Generating a good distance from other towns
      *
      * @param overWorld
      */
