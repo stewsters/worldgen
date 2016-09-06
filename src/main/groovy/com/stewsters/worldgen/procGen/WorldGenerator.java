@@ -163,23 +163,20 @@ public class WorldGenerator {
 
                 // if we are over water, evaporate
                 if (overWorld.getTileType(x, y).water) {
-                    moist += 1;
+                    moist += maximumMoistureBasedOnTemp;
                 }
-
-                float precip = 0f;
 
                 // Rainfall due to temp
                 if (moist > maximumMoistureBasedOnTemp) {
                     float rain = (moist - maximumMoistureBasedOnTemp);
-                    moist -= rain / 15f;
-                    precip += rain;
+                    moist -= rain;
                 }
 
                 // This is a random
-                precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
-                        0.25 * mo.eval(x / 45.0, y / 45.0))) * 0.5;
+//                precip += (float) ((0.75 * mo.eval(x / 70.0, y / 70.0) +
+//                        0.25 * mo.eval(x / 45.0, y / 45.0))) * 0.5;
 
-                overWorld.setPrecipitation(x, y, precip);
+                overWorld.setPrecipitation(x, y, moist);
 
             }
         }
