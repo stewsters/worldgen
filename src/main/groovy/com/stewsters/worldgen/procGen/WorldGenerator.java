@@ -158,6 +158,8 @@ public class WorldGenerator {
 
 
         final float maxDistance = 1000f;
+
+        float[][] precip = new float[xSize][ySize];
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
 
@@ -189,11 +191,40 @@ public class WorldGenerator {
                     tempY += windY;
                 }
 
-                overWorld.setPrecipitation(x, y, distanceLeft / maxDistance);
+                precip[x][y] = distanceLeft / maxDistance;
+
+//                overWorld.setPrecipitation(x, y, distanceLeft / maxDistance);
             }
         }
 
+        //Blur to get rid of tight swirls
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
 
+                float val = 0f;
+                for (int xD = -5; xD <= 5; xD++) {
+                    val += precip[MatUtils.limit(x + xD,0,xSize-1)][y];
+                }
+                precip[x][y] = val / 10f;
+            }
+
+        }
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
+
+                float val = 0f;
+                for (int yD = -5; yD <= 5; yD++) {
+                    val += precip[x][MatUtils.limit(y + yD,0,ySize-1)];
+                }
+                precip[x][y] = val / 10f;
+            }
+        }
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
+
+                overWorld.setPrecipitation(x, y, precip[x][y]);
+            }
+        }
         // rain shadow:
 //        for (int y = 0; y < ySize; y++) {
 //
