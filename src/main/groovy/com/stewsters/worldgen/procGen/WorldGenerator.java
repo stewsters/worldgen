@@ -3,10 +3,14 @@ package com.stewsters.worldgen.procGen;
 import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.noise.OpenSimplexNoise;
+import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.map.overworld.OverWorldChunk;
+import com.stewsters.worldgen.messageBus.Bus;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -138,8 +142,8 @@ public class WorldGenerator {
                 float windX = yd;
                 float windY = -xd;
 
-                windX = (100f * windX) - (0.5f * globalWindX);
-                windY = (100f * windY) + (0.5f * globalWindX);
+                windX = (50f * windX) - (0.5f * globalWindX);
+                windY = (50f * windY) + (0.5f * globalWindX);
 
                 overWorld.setWind(x, y, windX, windY);
             }
@@ -153,26 +157,26 @@ public class WorldGenerator {
         int ySize = overWorld.getPreciseYSize();
 
 
+        final float maxDistance = 1000f;
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
 
                 float tempX = x;
                 float tempY = y;
 
-                float maxDistance = 100f;
 
-                while (maxDistance > 0) {
+                float distanceLeft = maxDistance;
+                while (distanceLeft > 0) {
 
-                    if (!overWorld.contains((int)tempX, (int)tempY)) break;
+                    if (!overWorld.contains((int) tempX, (int) tempY)) break;
 
-                    BiomeType bt = overWorld.getTileType((int)tempX, (int)tempY);
+                    BiomeType bt = overWorld.getTileType((int) tempX, (int) tempY);
                     if (bt.water) break;
 
+                    distanceLeft--;
 
-                    maxDistance -= 0.1f;
-
-                    float windX = overWorld.getWindX((int)tempX, (int)tempY);
-                    float windY = overWorld.getWindY((int)tempX, (int)tempY);
+                    float windX = overWorld.getWindX((int) tempX, (int) tempY);
+                    float windY = overWorld.getWindY((int) tempX, (int) tempY);
 
 //
 //                    if (Math.abs(windX) > Math.abs(windY)) {
@@ -185,7 +189,7 @@ public class WorldGenerator {
                     tempY += windY;
                 }
 
-                overWorld.setPrecipitation(x, y, maxDistance / 100f);
+                overWorld.setPrecipitation(x, y, distanceLeft / maxDistance);
             }
         }
 
@@ -288,6 +292,8 @@ public class WorldGenerator {
      * Human settlements should be built near a source of water, preferably a river.
      * Most should be built at a low elevation
      * Generating a good distance from other towns
+     * <p>
+     * Population should follow https://en.wikipedia.org/wiki/Zipf%27s_law
      *
      * @param overWorld
      */
@@ -303,6 +309,49 @@ public class WorldGenerator {
             if (!overWorld.getTileType(x, y).name().startsWith("OCEAN")) {
                 overWorld.buildSettlement(x, y);
             }
+        }
+    }
+
+    // http://roadtrees.com/creating-road-trees/
+    public void createRoadNetwork(OverWorld overWorld) {
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
+        //Step One Determine which cities to link together first. Larger closer cities should go first
+
+        ArrayList<RankedSettlementPair> pairs = new ArrayList<>();
+        for (int a = 0; a < Settlement.settlements.size() - 1; a++) {
+            for (int b = a + 1; b < Settlement.settlements.size(); b++) {
+                pairs.add(new RankedSettlementPair(Settlement.settlements.get(a), Settlement.settlements.get(b)));
+            }
+        }
+        Collections.sort(pairs);
+
+        for (RankedSettlementPair p : pairs) {
+            Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
+        }
+
+        // Use A* to link cities.  Cost should reflect slope and terrain type.  Bridges are possible, but expensive.
+
+        //The first cities that are linked will have busy roads, and they will shrink down as
+
+    }
+
+    private class RankedSettlementPair implements Comparable<RankedSettlementPair> {
+        int a;
+        int b;
+        int distance;
+
+        public RankedSettlementPair(Settlement a, Settlement b) {
+            this.a = a.id;
+            this.b = b.id;
+
+            distance = (int) (a.population * b.population / Math.pow(a.pos.getChebyshevDistance(b.pos), 2));
+        }
+
+        @Override
+        public int compareTo(RankedSettlementPair o) {
+            return distance - o.distance;
         }
     }
 }

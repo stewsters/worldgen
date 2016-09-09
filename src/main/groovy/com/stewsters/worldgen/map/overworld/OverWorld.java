@@ -4,6 +4,7 @@ package com.stewsters.worldgen.map.overworld;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
+import com.stewsters.worldgen.messageBus.Bus;
 import com.stewsters.worldgen.procGen.WorldGenerator;
 
 import java.util.ArrayList;
@@ -46,12 +47,24 @@ public class OverWorld {
         coords.parallelStream().forEach(coord ->
                 chunks[coord.x][coord.y] = worldGenerator.generateChunkedTemperatureMap(this, coord.x, coord.y)
         );
+        Bus.bus.post("Finished Elevation").now();
 
         worldGenerator.generateWind(this);
+        Bus.bus.post("Finished Wind").now();
+
         worldGenerator.generatePrecipitation(this);
+        Bus.bus.post("Finished Precipitation").now();
 
         worldGenerator.generateRivers(this);
+        Bus.bus.post("Finished Rivers").now();
+
         worldGenerator.populateSettlements(this);
+        Bus.bus.post("Finished Populating Settlements").now();
+
+        worldGenerator.createRoadNetwork(this);
+        Bus.bus.post("Finished Creating Roads").now();
+
+        Bus.bus.post("Finished Generation").now();
     }
 
 

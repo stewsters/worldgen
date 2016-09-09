@@ -18,9 +18,7 @@ class MovementSystem {
             return
 
         // move the entity
-
         Bus.bus.post("Moved ${msg.id} ${msg.direction.toString()}" as String).asynchronously()
-
 
         int fx = leader.pos.x + msg.direction.x;
         int fy = leader.pos.y + msg.direction.y;
