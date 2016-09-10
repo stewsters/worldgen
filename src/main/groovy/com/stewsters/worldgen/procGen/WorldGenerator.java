@@ -166,7 +166,6 @@ public class WorldGenerator {
                 float tempX = x;
                 float tempY = y;
 
-
                 float distanceLeft = maxDistance;
                 while (distanceLeft > 0) {
 
@@ -203,7 +202,7 @@ public class WorldGenerator {
 
                 float val = 0f;
                 for (int xD = -5; xD <= 5; xD++) {
-                    val += precip[MatUtils.limit(x + xD,0,xSize-1)][y];
+                    val += precip[MatUtils.limit(x + xD, 0, xSize - 1)][y];
                 }
                 precip[x][y] = val / 10f;
             }
@@ -214,7 +213,7 @@ public class WorldGenerator {
 
                 float val = 0f;
                 for (int yD = -5; yD <= 5; yD++) {
-                    val += precip[x][MatUtils.limit(y + yD,0,ySize-1)];
+                    val += precip[x][MatUtils.limit(y + yD, 0, ySize - 1)];
                 }
                 precip[x][y] = val / 10f;
             }
@@ -225,29 +224,6 @@ public class WorldGenerator {
                 overWorld.setPrecipitation(x, y, precip[x][y]);
             }
         }
-        // rain shadow:
-//        for (int y = 0; y < ySize; y++) {
-//
-//            float moist = 0;
-//            for (int x = 0; x < xSize; x++) {
-//
-//                float temp = overWorld.getTemp(x, y);
-//                float maximumMoistureBasedOnTemp = MatUtils.limit(temp, 0, 1);
-//
-//                // if we are over water, evaporate
-//                if (overWorld.getTileType(x, y).water) {
-//                    moist += maximumMoistureBasedOnTemp;
-//                }
-//
-//                // Rainfall due to temp
-//                if (moist > maximumMoistureBasedOnTemp) {
-//                    float rain = (moist - maximumMoistureBasedOnTemp);
-//                    moist -= rain;
-//                }
-//                overWorld.setPrecipitation(x, y, moist);
-//
-//            }
-//        }
 
     }
 
@@ -267,53 +243,91 @@ public class WorldGenerator {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
 
-        for (int i = 0; i < 50; i++) {
-            int x = MatUtils.getIntInRange(0, xSize);
-            int y = MatUtils.getIntInRange(0, ySize);
-            boolean done = false;
+        for (int i = 0; i < 5; i++) {
+            float[][] riverFlux = new float[xSize][ySize];
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
 
-            while (!done) {
+                    float flow = overWorld.getPrecipitation(x, y) + 0.1f;
 
-                BiomeType existingType = overWorld.getTileType(x, y);
-                if (existingType == BiomeType.OCEAN_ABYSSAL || existingType == BiomeType.OCEAN_DEEP || existingType == BiomeType.OCEAN_SHALLOW) {
-                    break;
+                    int tempX = x;
+                    int tempY = y;
+
+                    while (true) {
+
+                        if (!overWorld.contains(tempX, tempY))
+                            break;
+
+                        // if the biome is ocean or frozen then end.
+//                        BiomeType existingType = overWorld.getTileType(tempX, tempY);
+
+//                        if (existingType == BiomeType.OCEAN_ABYSSAL || existingType == BiomeType.OCEAN_DEEP || existingType == BiomeType.OCEAN_SHALLOW) {
+//                            break;
+//                        }
+
+                        Facing2d facing = null;
+                        float height = overWorld.getElevation(tempX, tempY);
+
+                        if (height > overWorld.getElevation(tempX, tempY + 1)) {
+                            facing = Facing2d.NORTH;
+                            height = overWorld.getElevation(tempX, tempY + 1);
+                        }
+
+                        if (height > overWorld.getElevation(tempX, tempY - 1)) {
+                            facing = Facing2d.SOUTH;
+                            height = overWorld.getElevation(tempX, tempY - 1);
+                        }
+
+                        if (height > overWorld.getElevation(tempX + 1, tempY)) {
+                            facing = Facing2d.EAST;
+                            height = overWorld.getElevation(tempX + 1, tempY);
+                        }
+
+                        if (height > overWorld.getElevation(tempX - 1, tempY)) {
+                            facing = Facing2d.WEST;
+                            height = overWorld.getElevation(tempX - 1, tempY);
+                        }
+
+                        if (facing == null) {
+                            break;//TODO: local minima lake
+                        } else {
+                            riverFlux[tempX][tempY] += flow;
+
+                            tempX = tempX + facing.x;
+                            tempY = tempY + facing.y;
+                        }
+
+                    }
                 }
+            }
 
-                // if the biome is ocean or frozen then end.
-                Facing2d facing = null;
-                float height = overWorld.getElevation(x, y);
+            float maxFlux = 0;
 
-                if (height > overWorld.getElevation(x, y + 1)) {
-                    facing = Facing2d.NORTH;
-                    height = overWorld.getElevation(x, y + 1);
+            //Find maxflux to get
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    maxFlux = Math.max(maxFlux, (float) Math.sqrt(riverFlux[x][y]));
                 }
+            }
 
-                if (height > overWorld.getElevation(x, y - 1)) {
-                    facing = Facing2d.SOUTH;
-                    height = overWorld.getElevation(x, y - 1);
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    float f = overWorld.getElevation(x, y);
+                    overWorld.setElevation(x, y, Math.max(-1, f - ((0.2f) * (float) Math.sqrt(riverFlux[x][y]) / maxFlux)));
                 }
+            }
 
-                if (height > overWorld.getElevation(x + 1, y)) {
-                    facing = Facing2d.EAST;
-                    height = overWorld.getElevation(x + 1, y);
+
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+
+                    if (riverFlux[x][y] > maxFlux / 2f)
+                        overWorld.setRiver(x, y);
+
                 }
-
-                if (height > overWorld.getElevation(x - 1, y)) {
-                    facing = Facing2d.WEST;
-                    height = overWorld.getElevation(x - 1, y);
-                }
-
-                if (facing == null) {
-                    done = true;
-                } else {
-                    overWorld.setRiver(x, y);
-
-                    x = x + facing.x;
-                    y = y + facing.y;
-                }
-
             }
         }
+
     }
 
 
@@ -321,7 +335,7 @@ public class WorldGenerator {
      * Build Settlements
      * <p>
      * Human settlements should be built near a source of water, preferably a river.
-     * Most should be built at a low elevation
+     * Most should be built at a low elevation, near an area with high river flux
      * Generating a good distance from other towns
      * <p>
      * Population should follow https://en.wikipedia.org/wiki/Zipf%27s_law

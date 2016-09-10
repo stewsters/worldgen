@@ -58,6 +58,14 @@ public class OverWorld {
         worldGenerator.generateRivers(this);
         Bus.bus.post("Finished Rivers").now();
 
+        // Regeneration based on the new rivers
+        worldGenerator.generateWind(this);
+        Bus.bus.post("Finished Wind 2").now();
+
+        worldGenerator.generatePrecipitation(this);
+        Bus.bus.post("Finished Precipitation 2").now();
+
+
         worldGenerator.populateSettlements(this);
         Bus.bus.post("Finished Populating Settlements").now();
 
@@ -69,11 +77,11 @@ public class OverWorld {
 
 
     public int getPreciseXSize() {
-        return xSize * OverWorldChunk.chunkSize - 1;
+        return xSize * OverWorldChunk.chunkSize ;
     }
 
     public int getPreciseYSize() {
-        return ySize * OverWorldChunk.chunkSize - 1;
+        return ySize * OverWorldChunk.chunkSize;
     }
 
 

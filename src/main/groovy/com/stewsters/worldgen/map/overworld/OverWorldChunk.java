@@ -111,20 +111,20 @@ public class OverWorldChunk {
             return SNOW;
         }
 
-        if (t < 0.20) {
+        if (t < 0.40) {
             if (p < 0.33) return TEMPERATE_DESERT;
             if (p < 0.66) return SHRUBLAND;
             return TAIGA;
         }
 
-        if (t < 0.4) {
+        if (t < 0.6) {
             if (p < 0.16) return TEMPERATE_DESERT;
             if (p < 0.50) return GRASSLAND;
             if (p < 0.83) return TEMPERATE_DECIDUOUS_FOREST;
             return TEMPERATE_RAIN_FOREST;
         }
 
-        if (p < 0.16) return SUBTROPICAL_DESERT;
+        if (p < 0.10) return SUBTROPICAL_DESERT;
         if (p < 0.33) return GRASSLAND;
         if (p < 0.66) return TROPICAL_SEASONAL_FOREST;
         return TROPICAL_RAIN_FOREST;
