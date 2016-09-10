@@ -77,7 +77,7 @@ public class OverWorld {
 
 
     public int getPreciseXSize() {
-        return xSize * OverWorldChunk.chunkSize ;
+        return xSize * OverWorldChunk.chunkSize;
     }
 
     public int getPreciseYSize() {
@@ -116,6 +116,24 @@ public class OverWorld {
             return -1;
 
         return chunk.elevation[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public float getSlopeX(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        OverWorldChunk chunk2 = loadChunk(getChunkCoord(globalX + 1), getChunkCoord(globalY));
+
+        if (chunk == null || chunk2 == null)
+            return 0;
+        return chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] - chunk2.elevation[getPrecise(globalX + 1)][getPrecise(globalY)];
+    }
+
+    public float getSlopeY(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        OverWorldChunk chunk2 = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY + 1));
+
+        if (chunk == null || chunk2 == null)
+            return 0;
+        return chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] - chunk2.elevation[getPrecise(globalX)][getPrecise(globalY + 1)];
     }
 
     public float getTemp(int globalX, int globalY) {
@@ -218,6 +236,6 @@ public class OverWorld {
     }
 
     public boolean contains(int globalX, int globalY) {
-        return  !(globalX<0 || globalY<0 || globalX > xSize * OverWorldChunk.chunkSize|| globalY > ySize * OverWorldChunk.chunkSize);
+        return !(globalX < 0 || globalY < 0 || globalX > xSize * OverWorldChunk.chunkSize || globalY > ySize * OverWorldChunk.chunkSize);
     }
 }

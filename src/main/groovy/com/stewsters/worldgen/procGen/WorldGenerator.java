@@ -321,8 +321,9 @@ public class WorldGenerator {
             for (int x = 0; x < xSize; x++) {
                 for (int y = 0; y < ySize; y++) {
 
-                    if (riverFlux[x][y] > maxFlux / 2f)
+                    if (riverFlux[x][y] > maxFlux / 2f && !overWorld.getTileType(x,y).water) {
                         overWorld.setRiver(x, y);
+                    }
 
                 }
             }
