@@ -301,6 +301,28 @@ public class WorldGenerator {
                 }
             }
 
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+
+                    float val = 0f;
+                    for (int xD = -5; xD <= 5; xD++) {
+                        val += riverFlux[MatUtils.limit(x + xD, 0, xSize - 1)][y] / ((Math.abs(xD) + 1));
+                    }
+                    riverFlux[x][y] = val / 3.9f;
+                }
+
+            }
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+
+                    float val = 0f;
+                    for (int yD = -5; yD <= 5; yD++) {
+                        val += riverFlux[x][MatUtils.limit(y + yD, 0, ySize - 1)] / ((Math.abs(yD) + 1));
+                    }
+                    riverFlux[x][y] = val / 3.9f;
+                }
+            }
+
             float maxFlux = 0;
 
             //Find maxflux to get
@@ -313,20 +335,20 @@ public class WorldGenerator {
             for (int x = 0; x < xSize; x++) {
                 for (int y = 0; y < ySize; y++) {
                     float f = overWorld.getElevation(x, y);
-                    overWorld.setElevation(x, y, Math.max(-1, f - ((0.2f) * (float) Math.sqrt(riverFlux[x][y]) / maxFlux)));
+                    overWorld.setElevation(x, y, Math.max(-1, f - ((0.2f) * (float) Math.sqrt(Math.max(riverFlux[x][y] - 0.1, 0)) / maxFlux)));
                 }
             }
 
 
-            for (int x = 0; x < xSize; x++) {
-                for (int y = 0; y < ySize; y++) {
-
-                    if (riverFlux[x][y] > maxFlux / 2f && !overWorld.getTileType(x,y).water) {
-                        overWorld.setRiver(x, y);
-                    }
-
-                }
-            }
+//            for (int x = 0; x < xSize; x++) {
+//                for (int y = 0; y < ySize; y++) {
+//
+//                    if (riverFlux[x][y] > maxFlux / 2f && !overWorld.getTileType(x, y).water) {
+//                        overWorld.setRiver(x, y);
+//                    }
+//
+//                }
+//            }
         }
 
     }
