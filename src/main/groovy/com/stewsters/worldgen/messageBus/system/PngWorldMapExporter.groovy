@@ -22,6 +22,7 @@ class PngWorldMapExporter {
 
         BufferedImage biomes = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage height = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage height2 = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage precip = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage temper = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage wind = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
@@ -39,8 +40,15 @@ class PngWorldMapExporter {
 
                     float sat = waterVal ? 0.8f : 0.2f
 
-                    float heightVal = (float) ((elevation + 1f) / -2f);
-                    height.setRGB(x, y, Color.getHSBColor(heightVal, sat, 0.5f).getRGB())
+                    float heightVal = (float) ((elevation + 1f) / 2f);
+                    if (heightVal < 0) {
+                        Bus.bus.post("under ${x} ${y}").now()
+                    } else if (heightVal > 1) {
+                        Bus.bus.post("over ${x} ${y}").now()
+                    }
+
+                    height.setRGB(x, y, Color.HSBtoRGB(-heightVal, sat, 0.5f))
+                    height2.setRGB(x, y, Color.HSBtoRGB(1f, 1f, heightVal))
 
                     float precipVal = (float) (MatUtils.limit(overWorld.getPrecipitation(x, y) / 2f, 0, 1));
                     precip.setRGB(x, y, Color.getHSBColor(precipVal, sat, 0.5f).getRGB())
@@ -66,6 +74,7 @@ class PngWorldMapExporter {
 
         ImageIO.write(biomes, "PNG", new File("export/biomes.png"));
         ImageIO.write(height, "PNG", new File("export/elevation.png"));
+        ImageIO.write(height2, "PNG", new File("export/elevation2.png"));
         ImageIO.write(precip, "PNG", new File("export/precipitation.png"));
         ImageIO.write(temper, "PNG", new File("export/temperature.png"));
         ImageIO.write(wind, "PNG", new File("export/wind.png"));

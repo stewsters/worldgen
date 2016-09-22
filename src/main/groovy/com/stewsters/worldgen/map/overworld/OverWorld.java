@@ -41,13 +41,16 @@ public class OverWorld {
         coords.parallelStream().forEach(coord ->
                 chunks[coord.x][coord.y] = worldGenerator.generateChunkedHeightMap(this, coord.x, coord.y)
         );
+        Bus.bus.post("Finished Chunk Elevation").now();
+
         worldGenerator.evenElevation(this);
+        Bus.bus.post("Finished Evening").now();
 
         // Generate temperature based on that elevation
         coords.parallelStream().forEach(coord ->
                 chunks[coord.x][coord.y] = worldGenerator.generateChunkedTemperatureMap(this, coord.x, coord.y)
         );
-        Bus.bus.post("Finished Elevation").now();
+        Bus.bus.post("Finished Chunk Temperature").now();
 
         worldGenerator.generateWind(this);
         Bus.bus.post("Finished Wind").now();
@@ -57,6 +60,11 @@ public class OverWorld {
 
         worldGenerator.generateRivers(this);
         Bus.bus.post("Finished Rivers").now();
+
+        worldGenerator.evenElevation(this);
+        Bus.bus.post("Finished Evening 2").now();
+
+        // TODO: set sealevel to average
 
         // Regeneration based on the new rivers
         worldGenerator.generateWind(this);
@@ -236,6 +244,6 @@ public class OverWorld {
     }
 
     public boolean contains(int globalX, int globalY) {
-        return !(globalX < 0 || globalY < 0 || globalX > xSize * OverWorldChunk.chunkSize || globalY > ySize * OverWorldChunk.chunkSize);
+        return !(globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize);
     }
 }

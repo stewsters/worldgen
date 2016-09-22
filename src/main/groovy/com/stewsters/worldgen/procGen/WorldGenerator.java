@@ -62,7 +62,7 @@ public class WorldGenerator {
                         + 0.1 * el.eval(nx / 20.0 / 64 * overWorld.xSize, ny / 20.0 / 32 * overWorld.ySize);
 
                 overWorldChunk.elevation[x][y] = limit(
-                        (float) (elevation - Math.pow(yDist, 4) - Math.pow(xDist, 4)),
+                        (float) (elevation - 0.5 * Math.pow(xDist, 2) - 0.5 * Math.pow(yDist, 4)),
                         -1, 1);
             }
         }
@@ -179,13 +179,6 @@ public class WorldGenerator {
                     float windX = overWorld.getWindX((int) tempX, (int) tempY);
                     float windY = overWorld.getWindY((int) tempX, (int) tempY);
 
-//
-//                    if (Math.abs(windX) > Math.abs(windY)) {
-//                        nextX = (windX > 0) ? 1 : -1;
-//                    } else {
-//                        nextY = (windY > 0) ? 1 : -1;
-//                    }
-
                     tempX += windX;
                     tempY += windY;
                 }
@@ -220,7 +213,6 @@ public class WorldGenerator {
         }
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
-
                 overWorld.setPrecipitation(x, y, precip[x][y]);
             }
         }
@@ -268,24 +260,12 @@ public class WorldGenerator {
                         Facing2d facing = null;
                         float height = overWorld.getElevation(tempX, tempY);
 
-                        if (height > overWorld.getElevation(tempX, tempY + 1)) {
-                            facing = Facing2d.NORTH;
-                            height = overWorld.getElevation(tempX, tempY + 1);
-                        }
-
-                        if (height > overWorld.getElevation(tempX, tempY - 1)) {
-                            facing = Facing2d.SOUTH;
-                            height = overWorld.getElevation(tempX, tempY - 1);
-                        }
-
-                        if (height > overWorld.getElevation(tempX + 1, tempY)) {
-                            facing = Facing2d.EAST;
-                            height = overWorld.getElevation(tempX + 1, tempY);
-                        }
-
-                        if (height > overWorld.getElevation(tempX - 1, tempY)) {
-                            facing = Facing2d.WEST;
-                            height = overWorld.getElevation(tempX - 1, tempY);
+                        for (Facing2d facing2d : Facing2d.values()) {
+                            float potentialHeight = overWorld.getElevation(tempX + facing2d.x, tempY + facing2d.y);
+                            if (height > potentialHeight) {
+                                facing = facing2d;
+                                height = potentialHeight;
+                            }
                         }
 
                         if (facing == null) {
