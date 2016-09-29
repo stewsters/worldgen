@@ -2,7 +2,9 @@ package com.stewsters.worldgen.procGen;
 
 import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
+import com.stewsters.util.math.Point2i;
 import com.stewsters.util.noise.OpenSimplexNoise;
+import com.stewsters.util.pathing.twoDimention.pathfinder.AStarHeuristic2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
@@ -14,6 +16,7 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import static com.stewsters.util.math.MatUtils.d;
 import static com.stewsters.util.math.MatUtils.limit;
 
 public class WorldGenerator {
@@ -319,7 +322,6 @@ public class WorldGenerator {
                 }
             }
 
-
 //            for (int x = 0; x < xSize; x++) {
 //                for (int y = 0; y < ySize; y++) {
 //
@@ -332,7 +334,6 @@ public class WorldGenerator {
         }
 
     }
-
 
     /**
      * Build Settlements
@@ -348,14 +349,53 @@ public class WorldGenerator {
     public void populateSettlements(OverWorld overWorld) {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
+        int totalSettlements = 100;
+        int propositions = 500;
 
         // Build Settlements
-        for (int i = 0; i < 100; i++) {
-            int x = MatUtils.getIntInRange(0, xSize);
-            int y = MatUtils.getIntInRange(0, ySize);
+        for (int i = 0; i < totalSettlements; i++) {
 
-            if (!overWorld.getTileType(x, y).name().startsWith("OCEAN")) {
-                overWorld.buildSettlement(x, y);
+            ArrayList<Point2i> possibleLocations = new ArrayList<>();
+            int pop = d(1000);
+
+            // Propose new settlement locations
+            for (int j = 0; j < propositions; j++) {
+                int x = MatUtils.getIntInRange(0, xSize);
+                int y = MatUtils.getIntInRange(0, ySize);
+                possibleLocations.add(new Point2i(x, y));
+            }
+
+            float bestScore = Float.NEGATIVE_INFINITY;
+            Point2i bestLocal = null;
+
+            for (Point2i p : possibleLocations) {
+
+                float score = 0;
+                BiomeType biomeType = overWorld.getTileType(p.x, p.y);
+
+                if (biomeType.water) {
+                    score -= 1000;
+                }
+
+                for (Settlement s : Settlement.settlements) {
+                    float dist = p.getChebyshevDistance(s.pos);
+                    score -= s.population * pop / (dist * dist);
+                }
+
+                float percip = overWorld.getPrecipitation(p.x, p.y);
+
+                score += percip * 10;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestLocal = p;
+                }
+
+            }
+
+            if (bestLocal != null) {
+                Bus.bus.post(bestLocal.toString()).now();
+                overWorld.buildSettlement(bestLocal.x, bestLocal.y, pop);
             }
         }
     }
@@ -378,6 +418,9 @@ public class WorldGenerator {
         for (RankedSettlementPair p : pairs) {
             Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
         }
+
+
+
 
         // Use A* to link cities.  Cost should reflect slope and terrain type.  Bridges are possible, but expensive.
 

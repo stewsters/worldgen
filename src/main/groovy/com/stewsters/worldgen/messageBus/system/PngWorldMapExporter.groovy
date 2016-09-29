@@ -5,6 +5,7 @@ import com.stewsters.worldgen.map.overworld.OverWorld
 import com.stewsters.worldgen.map.overworld.OverWorldChunk
 import com.stewsters.worldgen.messageBus.Bus
 import net.engio.mbassy.listener.Handler
+import squidpony.squidcolor.SColor
 
 import javax.imageio.ImageIO
 import java.awt.*
@@ -36,7 +37,10 @@ class PngWorldMapExporter {
 
                     boolean waterVal = elevation > 0
 
-                    biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
+                    if (overWorld.getSettlement(x, y))
+                        biomes.setRGB(x, y, SColor.YELLOW.RGB)
+                    else
+                        biomes.setRGB(x, y, overWorld.getTileType(x, y).color.getRGB());
 
                     float sat = waterVal ? 0.8f : 0.2f
 
