@@ -4,7 +4,6 @@ import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.util.noise.OpenSimplexNoise;
-import com.stewsters.util.pathing.twoDimention.pathfinder.AStarHeuristic2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
@@ -60,12 +59,13 @@ public class WorldGenerator {
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
                 // Elevation - decreases near edges
-                double elevation = 0.6 * el.eval(nx / 240.0 / 64 * overWorld.xSize, ny / 240.0 / 32 * overWorld.ySize)
-                        + 0.3 * el.eval(nx / 84.0 / 64 * overWorld.xSize, ny / 84.0 / 32 * overWorld.ySize)
-                        + 0.1 * el.eval(nx / 20.0 / 64 * overWorld.xSize, ny / 20.0 / 32 * overWorld.ySize);
+                double elevation = (0.6 * el.eval(nx / 240.0, ny / 240.0));
+                elevation = (-2.0 * Math.abs(elevation)) + 1.0;
+                elevation += 0.2 * el.eval(nx / 51.0, ny / 51.0)
+                        + 0.1 * el.eval(nx / 31.0, ny / 31.0);
 
                 overWorldChunk.elevation[x][y] = limit(
-                        (float) (elevation - 0.5 * Math.pow(xDist, 2) - 0.5 * Math.pow(yDist, 4)),
+                        (float) (elevation - Math.min(Math.pow(xDist, 2) + Math.pow(yDist, 2), 2)),
                         -1, 1);
             }
         }
@@ -88,7 +88,7 @@ public class WorldGenerator {
                 // Temperature
                 //decreases with height, decreases with closeness to poles
                 overWorldChunk.temperature[x][y] = MatUtils.limit(
-                        1 - yDist
+                        1.2f * (1.f - yDist)
                                 - Math.max(0f, overWorldChunk.elevation[x][y])
                                 + 0.1f * (float) el.eval(1.0 * nx / 125.0, 1.0 * ny / 125.0),
                         -1, 1);
@@ -418,8 +418,6 @@ public class WorldGenerator {
         for (RankedSettlementPair p : pairs) {
             Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
         }
-
-
 
 
         // Use A* to link cities.  Cost should reflect slope and terrain type.  Bridges are possible, but expensive.
