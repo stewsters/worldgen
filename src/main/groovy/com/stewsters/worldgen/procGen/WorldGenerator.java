@@ -4,6 +4,9 @@ import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.util.noise.OpenSimplexNoise;
+import com.stewsters.util.pathing.twoDimention.pathfinder.AStarPathFinder2d;
+import com.stewsters.util.pathing.twoDimention.shared.FullPath2d;
+import com.stewsters.util.pathing.twoDimention.shared.Mover2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
@@ -349,8 +352,8 @@ public class WorldGenerator {
     public void populateSettlements(OverWorld overWorld) {
         int xSize = overWorld.getPreciseXSize();
         int ySize = overWorld.getPreciseYSize();
-        int totalSettlements = 100;
-        int propositions = 500;
+        int totalSettlements = 20;
+        int propositions = 1000;
 
         // Build Settlements
         for (int i = 0; i < totalSettlements; i++) {
@@ -402,9 +405,6 @@ public class WorldGenerator {
 
     // http://roadtrees.com/creating-road-trees/
     public void createRoadNetwork(OverWorld overWorld) {
-        int xSize = overWorld.getPreciseXSize();
-        int ySize = overWorld.getPreciseYSize();
-
         //Step One Determine which cities to link together first. Larger closer cities should go first
 
         ArrayList<RankedSettlementPair> pairs = new ArrayList<>();
@@ -415,8 +415,25 @@ public class WorldGenerator {
         }
         Collections.sort(pairs);
 
+
+        AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize(), true);
+        Mover2d mover2d = new RoadRunnerMover(overWorld);
+
         for (RankedSettlementPair p : pairs) {
             Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
+
+            Settlement a = Settlement.settlements.get(p.a);
+            Settlement b = Settlement.settlements.get(p.b);
+            FullPath2d path = pathFinder2d.findPath(mover2d, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+
+            if (path != null) {
+
+                for (int i = 0; i < path.getLength(); i++) {
+                    FullPath2d.Step step = path.getStep(i);
+                    overWorld.setRoad(step.getX(), step.getY());
+                }
+
+            }
         }
 
 
@@ -429,18 +446,21 @@ public class WorldGenerator {
     private class RankedSettlementPair implements Comparable<RankedSettlementPair> {
         int a;
         int b;
-        int distance;
+        double distance;
 
         public RankedSettlementPair(Settlement a, Settlement b) {
             this.a = a.id;
             this.b = b.id;
 
-            distance = (int) (a.population * b.population / Math.pow(a.pos.getChebyshevDistance(b.pos), 2));
+            distance = (a.population * b.population / Math.pow(a.pos.getChebyshevDistance(b.pos), 2));
         }
 
         @Override
         public int compareTo(RankedSettlementPair o) {
-            return distance - o.distance;
+            if (distance == o.distance) {
+                return 0;
+            }
+            return distance - o.distance > 0 ? 1 : -1;
         }
     }
 }

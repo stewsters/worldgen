@@ -43,6 +43,7 @@ public class OverWorldChunk {
     public boolean[][] river;
 
     public Settlement[][] settlement;
+    public boolean[][] road;
 
     public OverWorldChunk() {
 
@@ -54,6 +55,7 @@ public class OverWorldChunk {
         windX = new float[chunkSize][chunkSize];
         windY = new float[chunkSize][chunkSize];
 
+        road = new boolean[chunkSize][chunkSize];
         river = new boolean[chunkSize][chunkSize];
         settlement = new Settlement[chunkSize][chunkSize];
 
@@ -68,6 +70,7 @@ public class OverWorldChunk {
                 windY[x][y] = 0f;
 
                 river[x][y] = false;
+                road[x][y] = false;
                 settlement[x][y] = null;
             }
         }

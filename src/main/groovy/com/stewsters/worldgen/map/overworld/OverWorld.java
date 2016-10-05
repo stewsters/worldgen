@@ -1,6 +1,7 @@
 package com.stewsters.worldgen.map.overworld;
 
 
+import com.stewsters.util.pathing.twoDimention.shared.TileBasedMap2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.procGen.WorldGenerator;
@@ -8,16 +9,12 @@ import com.stewsters.worldgen.procGen.WorldGenerator;
 import java.util.logging.Logger;
 
 
-public class OverWorld {
+public class OverWorld implements TileBasedMap2d {
 
     public final int xSize;
     public final int ySize;
 
-    private static final Logger log = Logger.getLogger(OverWorld.class.getName());
-
     public final OverWorldChunk[][] chunks;
-
-    private WorldGenerator worldGenerator;
 
     public OverWorld(int xSize, int ySize) {
 
@@ -27,7 +24,6 @@ public class OverWorld {
         chunks = new OverWorldChunk[xSize][ySize];
 
     }
-
 
     public int getPreciseXSize() {
         return xSize * OverWorldChunk.chunkSize;
@@ -188,7 +184,42 @@ public class OverWorld {
             chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
     }
 
+
+    public boolean getRoad(int globalX, int globalY) {
+
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null)
+            return false;
+
+        return chunk.road[getPrecise(globalX)][getPrecise(globalY)];
+    }
+
+    public void setRoad(int globalX, int globalY) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.road[getPrecise(globalX)][getPrecise(globalY)] = true;
+
+    }
+
+
     public boolean contains(int globalX, int globalY) {
         return !(globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize);
     }
+
+    @Override
+    public int getXSize() {
+        return xSize * OverWorldChunk.chunkSize;
+    }
+
+    @Override
+    public int getYSize() {
+        return ySize * OverWorldChunk.chunkSize;
+    }
+
+    @Override
+    public void pathFinderVisited(int x, int y) {
+
+    }
+
+
 }
