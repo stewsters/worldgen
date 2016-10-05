@@ -2,7 +2,6 @@ package com.stewsters.worldgen.screens;
 
 
 import com.stewsters.util.math.Point2i;
-import com.stewsters.worldgen.game.Leader;
 import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.messageBus.Bus;
 import com.stewsters.worldgen.procGen.WorldGenerator;
@@ -43,58 +42,42 @@ public class GenerationScreen implements Screen {
         }
 
         // Generate elevation
-        coords.parallelStream().forEach(coord ->
-                overWorld.chunks[coord.x][coord.y] = worldGenerator.generateChunkedHeightMap(overWorld, coord.x, coord.y)
-        );
-        Bus.bus.post("Finished Chunk Elevation").now();
+        worldGenerator.generateElevation(overWorld, coords);
 
         worldGenerator.evenElevation(overWorld);
-
-        Bus.bus.post("Finished Evening").now();
 
         // Generate temperature based on that elevation
-        coords.parallelStream().forEach(coord ->
-                overWorld.chunks[coord.x][coord.y] = worldGenerator.generateChunkedTemperatureMap(overWorld, coord.x, coord.y)
-        );
-        Bus.bus.post("Finished Chunk Temperature").now();
+        worldGenerator.generateTemperature(overWorld, coords);
 
-        worldGenerator.generateWind(overWorld);
-        Bus.bus.post("Finished Wind").now();
+        worldGenerator.generateWind(overWorld, coords);
 
         worldGenerator.generatePrecipitation(overWorld);
-        Bus.bus.post("Finished Precipitation").now();
 
         worldGenerator.generateRivers(overWorld);
-        Bus.bus.post("Finished Rivers").now();
 
         worldGenerator.evenElevation(overWorld);
-        Bus.bus.post("Finished Evening 2").now();
 
         // TODO: set sealevel to average
 
         // Regeneration based on the new rivers
-        worldGenerator.generateWind(overWorld);
-        Bus.bus.post("Finished Wind 2").now();
+        worldGenerator.generateWind(overWorld, coords);
 
         worldGenerator.generatePrecipitation(overWorld);
-        Bus.bus.post("Finished Precipitation 2").now();
-
 
         worldGenerator.populateSettlements(overWorld);
-        Bus.bus.post("Finished Populating Settlements").now();
 
         worldGenerator.createRoadNetwork(overWorld);
-        Bus.bus.post("Finished Creating Roads").now();
+
 
         Bus.bus.post("Finished Generation").now();
-
 
         Bus.bus.post(overWorld).asynchronously();
 
         display.placeHorizontalString(1, 2, "Done");
 
-
     }
+
+
 
 
     @Override
