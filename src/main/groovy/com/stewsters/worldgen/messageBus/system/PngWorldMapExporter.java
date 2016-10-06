@@ -6,6 +6,7 @@ import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 import com.stewsters.worldgen.messageBus.Bus;
 import net.engio.mbassy.listener.Handler;
 import squidpony.squidcolor.SColor;
+import squidpony.squidcolor.SColorFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -68,7 +69,8 @@ public class PngWorldMapExporter {
 
                     SColor color = overWorld.getSettlement(x, y) != null ? SColor.GREEN :
                             overWorld.getRoad(x, y) ? SColor.YELLOW :
-                                    aboveSeaLevel ? SColor.DARK_BROWN : SColor.DARK_BLUE;
+                                    aboveSeaLevel ? SColorFactory.blend(SColor.BROWN, SColor.WHITE, Math.max(0, elevation)) : SColor.DARK_BLUE;
+
                     roads.setRGB(x, y, color.getRGB());
 
                 } catch (Exception e) {
