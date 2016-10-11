@@ -8,8 +8,7 @@ public class RoadRunnerMover implements Mover2d {
     OverWorld overWorld;
 
     final float offroadMult = 3f;
-    final float hillClimb = 10f;
-    final float elevationPenalty = 2f;
+    final float hillClimb = 1000f;
 
     public RoadRunnerMover(OverWorld overWorld) {
         this.overWorld = overWorld;
@@ -32,8 +31,7 @@ public class RoadRunnerMover implements Mover2d {
 
         return (float) ((overWorld.getRoad(tx, ty) ? 1f : offroadMult) // roads are less expensive
                 * (((tx == sx) || (ty == tx)) ? 1f : 1.41421356237f) // diagonal
-                * (1 + Math.pow(hillClimb * (overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy)), 2)))
-                + elevationPenalty * overWorld.getElevation(tx, ty); // elevation changes are bad too
+                * (1 + (hillClimb * Math.abs(overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy))))); // The difference in elevation is absolutely tiny. so penalize any change drastically.
 
     }
 }
