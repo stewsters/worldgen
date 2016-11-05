@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static com.stewsters.util.math.MatUtils.d;
-import static com.stewsters.util.math.MatUtils.limit;
 
 public class WorldGenerator {
 
@@ -69,19 +68,30 @@ public class WorldGenerator {
                 float xDist = (float) Math.abs(nx - xCenter) / xCenter;
                 float yDist = (float) Math.abs(ny - yCenter) / yCenter;
 
-                // Elevation - decreases near edges
-                double elevation = (0.5 * el.eval(nx / 240.0, ny / 240.0)) +
-                        (0.2 * el.eval(nx / 140.0, ny / 140.0));
-                elevation = (-2.0 * Math.abs(elevation)) + 1.0;
-                elevation += 0.2 * el.eval(nx / 51.0, ny / 51.0)
-                        + 0.1 * el.eval(nx / 31.0, ny / 31.0);
+                double ridginess = octave(nx / 100.0, ny / 100.0, 5, 0.5f);
+                ridginess = (-2.0 * Math.abs(ridginess)) + 1.0;
+                ridginess *= ((el.eval(nx / 430.0, ny / 430.0) + 1.0) / 2.0);
 
-                overWorldChunk.elevation[x][y] = limit(
-                        (float) (elevation - Math.min(Math.pow(xDist, 2) + Math.pow(yDist, 2), 2)),
-                        -1, 1);
+                double elevation = (el.eval(nx / 120.0, ny / 120.0)) +
+                        (ridginess * el.eval(nx / 30.0, ny / 30.0));
+
+                // Elevation - decreases near edges
+                elevation += 2 * (1 - Math.max(xDist, yDist));
+
+                overWorldChunk.elevation[x][y] = (float) elevation;
             }
         }
         return overWorldChunk;
+    }
+
+    public double octave(double x, double y, int numOctaves, float fallOff) {
+        double result = 0;
+
+        for (int octaveNo = 0; octaveNo < numOctaves; octaveNo++) {
+            double scale = 1 / (octaveNo + 1);
+            result += scale * el.eval(x * scale, y * scale);
+        }
+        return result;
     }
 
 

@@ -29,8 +29,8 @@ public class RoadRunnerMover implements Mover2d {
 
 //        overWorld.getTileType(tx, ty)
 
-        return (float) ((overWorld.getRoad(tx, ty) ? 1f : offroadMult) // roads are less expensive
-                * (((tx == sx) || (ty == tx)) ? 1f : 1.41421356237f) // diagonal
+        return  ((overWorld.getRoad(tx, ty) ? 1f : offroadMult) // roads are less expensive
+                * (((tx == sx) || (ty == tx)) ? 0.7f : 1f) // diagonal
                 * (1 + (hillClimb * Math.abs(overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy))))); // The difference in elevation is absolutely tiny. so penalize any change drastically.
 
     }
