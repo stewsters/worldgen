@@ -42,11 +42,13 @@ public class WorldGenerator {
         mo = new OpenSimplexNoise(r.nextLong());
     }
 
-    public void generateElevation(OverWorld overWorld, ArrayList<Point2i> coords) {
+    public void generateElevation(OverWorld overWorld) {
         Bus.bus.post("Beginning Chunk Elevation").now();
-        coords.parallelStream().forEach(coord ->
-                overWorld.chunks[coord.x][coord.y] = generateChunkedHeightMap(overWorld, coord.x, coord.y)
-        );
+        IntStream.range(0, overWorld.xSize).parallel().forEach(x -> {
+            IntStream.range(0, overWorld.ySize).parallel().forEach(y -> {
+                overWorld.chunks[x][y] = generateChunkedHeightMap(overWorld, x, y);
+            });
+        });
         Bus.bus.post("Finished Chunk Elevation").now();
     }
 
@@ -95,11 +97,14 @@ public class WorldGenerator {
     }
 
 
-    public void generateTemperature(OverWorld overWorld, ArrayList<Point2i> coords) {
+    public void generateTemperature(OverWorld overWorld) {
         Bus.bus.post("Starting Chunk Temperature").now();
-        coords.parallelStream().forEach(coord ->
-                overWorld.chunks[coord.x][coord.y] = generateChunkedTemperatureMap(overWorld, coord.x, coord.y)
-        );
+        IntStream.range(0, overWorld.xSize).parallel().forEach(x -> {
+            IntStream.range(0, overWorld.ySize).parallel().forEach(y -> {
+                overWorld.chunks[x][y] = generateChunkedTemperatureMap(overWorld, x, y);
+            });
+        });
+
         Bus.bus.post("Finished Chunk Temperature").now();
     }
 
@@ -158,42 +163,44 @@ public class WorldGenerator {
     }
 
 
-    public void generateWind(OverWorld overWorld, ArrayList<Point2i> coords) {
+    public void generateWind(OverWorld overWorld) {
         Bus.bus.post("Starting Wind").now();
 
         int ySize = overWorld.getPreciseYSize();
         float periods = 4;
 
-        coords.parallelStream().forEach(coord -> {
-                    OverWorldChunk overWorldChunk = overWorld.loadChunk(coord.x, coord.y);
-                    for (int y = 0; y < OverWorldChunk.chunkSize; y++) {
-                        int ny = coord.y * OverWorldChunk.chunkSize + y;
+        IntStream.range(0, overWorld.xSize).parallel().forEach(xChunk -> {
+            IntStream.range(0, overWorld.ySize).parallel().forEach(yChunk -> {
 
-                        float percentage = (float) ny / ySize;
-                        float globalWindX = (float) Math.cos(periods * (2 * Math.PI) * percentage);
-                        for (int x = 0; x < OverWorldChunk.chunkSize; x++) {
+                OverWorldChunk overWorldChunk = overWorld.loadChunk(xChunk, yChunk);
+                for (int y = 0; y < OverWorldChunk.chunkSize; y++) {
+                    int ny = yChunk * OverWorldChunk.chunkSize + y;
 
-                            int nx = coord.x * OverWorldChunk.chunkSize + x;
+                    float percentage = (float) ny / ySize;
+                    float globalWindX = (float) Math.cos(periods * (2 * Math.PI) * percentage);
+                    for (int x = 0; x < OverWorldChunk.chunkSize; x++) {
 
-                            float temp = overWorld.getTemp(nx, ny);
-                            float xd = temp - overWorld.getTemp(nx + 1, ny);
-                            float yd = temp - overWorld.getTemp(nx, ny + 1);
+                        int nx = xChunk * OverWorldChunk.chunkSize + x;
 
-                            // Rotate 90 degrees
-                            float windX = yd;
-                            float windY = -xd;
+                        float temp = overWorld.getTemp(nx, ny);
+                        float xd = temp - overWorld.getTemp(nx + 1, ny);
+                        float yd = temp - overWorld.getTemp(nx, ny + 1);
 
-                            windX = (50f * windX) - (0.5f * globalWindX);
-                            windY = (50f * windY) + (0.5f * globalWindX);
+                        // Rotate 90 degrees
+                        float windX = yd;
+                        float windY = -xd;
 
-                            overWorldChunk.windX[x][y] = windX;
-                            overWorldChunk.windY[x][y] = windY;
+                        windX = (50f * windX) - (0.5f * globalWindX);
+                        windY = (50f * windY) + (0.5f * globalWindX);
 
-                        }
+                        overWorldChunk.windX[x][y] = windX;
+                        overWorldChunk.windY[x][y] = windY;
+
                     }
-
                 }
-        );
+
+            });
+        });
 
         Bus.bus.post("Finished Wind").now();
     }

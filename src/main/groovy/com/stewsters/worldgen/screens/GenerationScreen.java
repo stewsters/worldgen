@@ -34,22 +34,15 @@ public class GenerationScreen implements Screen {
         overWorld = new OverWorld(xSize, ySize);
         WorldGenerator worldGenerator = new WorldGenerator();
 
-        ArrayList<Point2i> coords = new ArrayList<Point2i>();
-        for (int x = 0; x < xSize; x++) {
-            for (int y = 0; y < ySize; y++) {
-                coords.add(new Point2i(x, y));
-            }
-        }
-
         // Generate elevation
-        worldGenerator.generateElevation(overWorld, coords);
+        worldGenerator.generateElevation(overWorld);
 
         worldGenerator.evenElevation(overWorld);
 
         // Generate temperature based on that elevation
-        worldGenerator.generateTemperature(overWorld, coords);
+        worldGenerator.generateTemperature(overWorld);
 
-        worldGenerator.generateWind(overWorld, coords);
+        worldGenerator.generateWind(overWorld);
 
         worldGenerator.generatePrecipitation(overWorld);
 
@@ -60,7 +53,7 @@ public class GenerationScreen implements Screen {
         // TODO: set sealevel to average
 
         // Regeneration based on the new rivers
-        worldGenerator.generateWind(overWorld, coords);
+        worldGenerator.generateWind(overWorld);
 
         worldGenerator.generatePrecipitation(overWorld);
 

@@ -7,7 +7,7 @@ public class RoadRunnerMover implements Mover2d {
 
     OverWorld overWorld;
 
-    final float offroadMult = 3f;
+    final float offroadMult = 2f;
     final float hillClimb = 1000f;
 
     public RoadRunnerMover(OverWorld overWorld) {
