@@ -14,8 +14,11 @@ import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 import com.stewsters.worldgen.messageBus.Bus;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
@@ -75,7 +78,10 @@ public class WorldGenerator {
                 ridginess *= ((el.eval(nx / 430.0, ny / 430.0) + 1.0) / 2.0);
 
                 double elevation = (el.eval(nx / 120.0, ny / 120.0)) +
+                        0.1 * (el.eval(nx / 70.0, ny / 70.0)) +
                         (ridginess * el.eval(nx / 30.0, ny / 30.0));
+
+                elevation = Math.pow(elevation, 2);
 
                 // Elevation - decreases near edges
                 elevation += 2 * (1 - Math.max(xDist, yDist));
@@ -465,33 +471,52 @@ public class WorldGenerator {
     public void createRoadNetwork(OverWorld overWorld) {
         //Step One Determine which cities to link together first. Larger closer cities should go first
 
-        ArrayList<RankedSettlementPair> pairs = new ArrayList<>();
-        for (int a = 0; a < Settlement.settlements.size() - 1; a++) {
-            for (int b = a + 1; b < Settlement.settlements.size(); b++) {
-                pairs.add(new RankedSettlementPair(Settlement.settlements.get(a), Settlement.settlements.get(b)));
+        Bus.bus.post("Creating Roads").now();
+        HashMap<Integer, ArrayList<Settlement>> settlementsPerContinent = new HashMap<>();
+
+        for (Settlement settlement : Settlement.settlements) {
+            int id = overWorld.getRegionId(settlement.pos.x, settlement.pos.y);
+
+            ArrayList<Settlement> settlements = settlementsPerContinent.get(id);
+            if (settlements == null) {
+                settlements = new ArrayList<>();
+                settlementsPerContinent.put(id, settlements);
             }
+            settlements.add(settlement);
         }
-        Collections.sort(pairs);
 
-        AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize(), true, new ClosestHeuristic2d());
-        Mover2d mover2d = new RoadRunnerMover(overWorld);
+        settlementsPerContinent.values().parallelStream().forEach(settlements -> {
 
-        for (RankedSettlementPair p : pairs) {
-            Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
+            ArrayList<RankedSettlementPair> pairs = new ArrayList<>();
 
-            Settlement a = Settlement.settlements.get(p.a);
-            Settlement b = Settlement.settlements.get(p.b);
-            FullPath2d path = pathFinder2d.findPath(mover2d, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-
-            if (path != null) {
-
-                for (int i = 0; i < path.getLength(); i++) {
-                    FullPath2d.Step step = path.getStep(i);
-                    overWorld.setRoad(step.getX(), step.getY());
+            for (int a = 0; a < settlements.size() - 1; a++) {
+                for (int b = a + 1; b < settlements.size(); b++) {
+                    pairs.add(new RankedSettlementPair(settlements.get(a), settlements.get(b)));
                 }
-
             }
-        }
+            Collections.sort(pairs);
+
+            AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize(), true, new ClosestHeuristic2d());
+            Mover2d mover2d = new RoadRunnerMover(overWorld);
+
+            for (RankedSettlementPair p : pairs) {
+                Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
+
+                Settlement a = Settlement.settlements.get(p.a);
+                Settlement b = Settlement.settlements.get(p.b);
+                FullPath2d path = pathFinder2d.findPath(mover2d, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+
+                if (path != null) {
+
+                    for (int i = 0; i < path.getLength(); i++) {
+                        FullPath2d.Step step = path.getStep(i);
+                        overWorld.setRoad(step.getX(), step.getY());
+                    }
+
+                }
+            }
+
+        });
 
 
         // Use A* to link cities.  Cost should reflect slope and terrain type.  Bridges are possible, but expensive.
@@ -501,7 +526,86 @@ public class WorldGenerator {
         Bus.bus.post("Finished Creating Roads").now();
     }
 
+    private static final int uncalculatedRegion = -1;
+    private static final int blockedRegion = -2;
 
+    // This finds contiguous land masses
+    public void generateContinents(OverWorld overWorld) {
+
+        Bus.bus.post("Generating Continents").now();
+        //Reset
+        for (int x = 0; x < overWorld.getPreciseXSize(); x++) {
+            for (int y = 0; y < overWorld.getPreciseYSize(); y++) {
+                if (overWorld.getElevation(x, y) < 0)
+                    overWorld.setRegion(x, y, blockedRegion);
+                else
+                    overWorld.setRegion(x, y, uncalculatedRegion);
+            }
+        }
+
+        int i = 0;
+        for (int x = 0; x < overWorld.getPreciseXSize(); x++) {
+            for (int y = 0; y < overWorld.getPreciseYSize(); y++) {
+                if (overWorld.getRegionId(x, y) == uncalculatedRegion) {
+                    floodFillBFS(overWorld, x, y, uncalculatedRegion, i++);
+                }
+            }
+        }
+        Bus.bus.post("Finished Generating Continents").now();
+    }
+
+    private void floodFill(OverWorld overWorld, int x, int y, int target, int replacement) {
+
+        if (target == replacement)
+            return;
+        if (target != overWorld.getRegionId(x, y))
+            return;
+
+        overWorld.setRegion(x, y, replacement);
+
+        if (x < overWorld.getPreciseXSize())
+            floodFill(overWorld, x + 1, y, target, replacement);
+        if (x > 0)
+            floodFill(overWorld, x - 1, y, target, replacement);
+        if (y < overWorld.getPreciseYSize())
+            floodFill(overWorld, x, y + 1, target, replacement);
+        if (y > 0)
+            floodFill(overWorld, x, y - 1, target, replacement);
+    }
+
+    private void floodFillBFS(OverWorld overWorld, int sx, int sy, int target, int replacement) {
+
+        Point2i q = new Point2i(sx, sy);
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
+        if (q.y < 0 || q.y >= ySize || q.x < 0 || q.x >= xSize)
+            return;
+
+        Deque<Point2i> stack = new ArrayDeque<>();
+        stack.push(q);
+        while (stack.size() > 0) {
+            Point2i p = stack.pop();
+            int x = p.x;
+            int y = p.y;
+            if (y < 0 || y >= ySize || x < 0 || x >= xSize)
+                continue;
+            int val = overWorld.getRegionId(x, y);
+            if (val == target) {
+                overWorld.setRegion(x, y, replacement);
+
+                if (x + 1 < xSize && overWorld.getRegionId(x + 1, y) == target)
+                    stack.push(new Point2i(x + 1, y));
+                if (x - 1 > 0 && overWorld.getRegionId(x - 1, y) == target)
+                    stack.push(new Point2i(x - 1, y));
+                if (y + 1 < ySize && overWorld.getRegionId(x, y + 1) == target)
+                    stack.push(new Point2i(x, y + 1));
+                if (y - 1 > 0 && overWorld.getRegionId(x, y - 1) == target)
+                    stack.push(new Point2i(x, y - 1));
+            }
+        }
+
+    }
 }
 
 class RankedSettlementPair implements Comparable<RankedSettlementPair> {

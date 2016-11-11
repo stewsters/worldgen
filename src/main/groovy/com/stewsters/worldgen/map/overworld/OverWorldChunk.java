@@ -3,25 +3,7 @@ package com.stewsters.worldgen.map.overworld;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 
-import static com.stewsters.worldgen.map.BiomeType.BARE;
-import static com.stewsters.worldgen.map.BiomeType.BEACH;
-import static com.stewsters.worldgen.map.BiomeType.GRASSLAND;
-import static com.stewsters.worldgen.map.BiomeType.OCEAN_ABYSSAL;
-import static com.stewsters.worldgen.map.BiomeType.OCEAN_DEEP;
-import static com.stewsters.worldgen.map.BiomeType.OCEAN_SHALLOW;
 import static com.stewsters.worldgen.map.BiomeType.RIVER;
-import static com.stewsters.worldgen.map.BiomeType.SCORCHED;
-import static com.stewsters.worldgen.map.BiomeType.SEA_ICE;
-import static com.stewsters.worldgen.map.BiomeType.SHRUBLAND;
-import static com.stewsters.worldgen.map.BiomeType.SNOW;
-import static com.stewsters.worldgen.map.BiomeType.SUBTROPICAL_DESERT;
-import static com.stewsters.worldgen.map.BiomeType.TAIGA;
-import static com.stewsters.worldgen.map.BiomeType.TEMPERATE_DECIDUOUS_FOREST;
-import static com.stewsters.worldgen.map.BiomeType.TEMPERATE_DESERT;
-import static com.stewsters.worldgen.map.BiomeType.TEMPERATE_RAIN_FOREST;
-import static com.stewsters.worldgen.map.BiomeType.TROPICAL_RAIN_FOREST;
-import static com.stewsters.worldgen.map.BiomeType.TROPICAL_SEASONAL_FOREST;
-import static com.stewsters.worldgen.map.BiomeType.TUNDRA;
 
 public class OverWorldChunk {
 
@@ -31,6 +13,8 @@ public class OverWorldChunk {
     public float[][] temperature;
     public float[][] precipitation;
     public float[][] drainage;
+
+    public int[][] regionIds;
 
     public float[][] windX;
     public float[][] windY;
@@ -52,6 +36,8 @@ public class OverWorldChunk {
         precipitation = new float[chunkSize][chunkSize];
         drainage = new float[chunkSize][chunkSize];
 
+        regionIds = new int[chunkSize][chunkSize];
+
         windX = new float[chunkSize][chunkSize];
         windY = new float[chunkSize][chunkSize];
 
@@ -65,6 +51,8 @@ public class OverWorldChunk {
                 temperature[x][y] = 0f;
                 precipitation[x][y] = 0f;
                 drainage[x][y] = 0f;
+
+                regionIds[x][y] = 0;
 
                 windX[x][y] = 0f;
                 windY[x][y] = 0f;
@@ -82,7 +70,5 @@ public class OverWorldChunk {
             return RIVER;
         return BiomeType.biome(elevation[pX][pY], temperature[pX][pY], precipitation[pX][pY]);
     }
-
-
 
 }

@@ -4,9 +4,6 @@ package com.stewsters.worldgen.map.overworld;
 import com.stewsters.util.pathing.twoDimention.shared.TileBasedMap2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
-import com.stewsters.worldgen.procGen.WorldGenerator;
-
-import java.util.logging.Logger;
 
 
 public class OverWorld implements TileBasedMap2d {
@@ -31,6 +28,16 @@ public class OverWorld implements TileBasedMap2d {
 
     public int getPreciseYSize() {
         return ySize * OverWorldChunk.chunkSize;
+    }
+
+    @Override
+    public int getXSize() {
+        return getPreciseXSize();
+    }
+
+    @Override
+    public int getYSize() {
+        return getPreciseYSize();
     }
 
 
@@ -198,7 +205,6 @@ public class OverWorld implements TileBasedMap2d {
         OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
         if (chunk != null)
             chunk.road[getPrecise(globalX)][getPrecise(globalY)] = true;
-
     }
 
 
@@ -206,20 +212,23 @@ public class OverWorld implements TileBasedMap2d {
         return !(globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize);
     }
 
-    @Override
-    public int getXSize() {
-        return xSize * OverWorldChunk.chunkSize;
-    }
-
-    @Override
-    public int getYSize() {
-        return ySize * OverWorldChunk.chunkSize;
-    }
 
     @Override
     public void pathFinderVisited(int x, int y) {
 
     }
 
+    public void setRegion(int globalX, int globalY, int newRegion) {
+        OverWorldChunk chunk = loadGlobalChunk(globalX, globalY);
+        if (chunk != null)
+            chunk.regionIds[getPrecise(globalX)][getPrecise(globalY)] = newRegion;
+    }
 
+    public int getRegionId(int globalX, int globalY) {
+        OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
+        if (chunk == null) {
+            return -3;
+        }
+        return chunk.regionIds[getPrecise(globalX)][getPrecise(globalY)];
+    }
 }

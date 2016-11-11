@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -34,8 +35,11 @@ public class PngWorldMapExporter {
         BufferedImage temper = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage wind = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
         BufferedImage roads = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage continents = new BufferedImage(xTotal, yTotal, BufferedImage.TYPE_INT_ARGB);
 
         Bus.bus.post("beginning transformation").asynchronously();
+
+        HashMap<Integer, Color> colors = new HashMap<>();
 
         for (int x = 0; x < xTotal; x++) {
             for (int y = 0; y < yTotal; y++) {
@@ -59,6 +63,11 @@ public class PngWorldMapExporter {
                     float tempVal = (float) ((overWorld.getTemp(x, y) + 1f) / -2f);
                     temper.setRGB(x, y, Color.getHSBColor(tempVal, sat, 0.5f).getRGB());
 
+                    int region = overWorld.getRegionId(x, y);
+                    if (colors.get(region) == null) {
+                        colors.put(region, Color.getHSBColor(MatUtils.getFloatInRange(0, 1), 0.8f, 0.5f));
+                    }
+                    continents.setRGB(x, y, colors.get(region).getRGB());
 
                     float windX = overWorld.getWindX(x, y);
                     float windY = overWorld.getWindY(x, y);
@@ -88,7 +97,8 @@ public class PngWorldMapExporter {
                 () -> ImageIO.write(precip, "PNG", new File("export/precipitation.png")),
                 () -> ImageIO.write(temper, "PNG", new File("export/temperature.png")),
                 () -> ImageIO.write(wind, "PNG", new File("export/wind.png")),
-                () -> ImageIO.write(roads, "PNG", new File("export/roads.png"))
+                () -> ImageIO.write(roads, "PNG", new File("export/roads.png")),
+                () -> ImageIO.write(continents, "PNG", new File("export/continents.png"))
         );
 
         try {

@@ -57,6 +57,8 @@ public class GenerationScreen implements Screen {
 
         worldGenerator.generatePrecipitation(overWorld);
 
+        worldGenerator.generateContinents(overWorld);
+
         worldGenerator.populateSettlements(overWorld);
 
         worldGenerator.createRoadNetwork(overWorld);
