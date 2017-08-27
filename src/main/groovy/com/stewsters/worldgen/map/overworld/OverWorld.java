@@ -22,6 +22,22 @@ public class OverWorld implements TileBasedMap2d {
 
     }
 
+    private static int getPrecise(int globalCoord) {
+        if (globalCoord >= 0) {
+            return (globalCoord % OverWorldChunk.chunkSize);
+        } else {
+            return (globalCoord % OverWorldChunk.chunkSize) + OverWorldChunk.chunkSize - 1;
+        }
+    }
+
+    private static int getChunkCoord(int globalCoord) {
+        if (globalCoord >= 0) {
+            return (globalCoord / OverWorldChunk.chunkSize);
+        } else {
+            return (globalCoord / OverWorldChunk.chunkSize) - 1;
+        }
+    }
+
     public int getPreciseXSize() {
         return xSize * OverWorldChunk.chunkSize;
     }
@@ -39,24 +55,6 @@ public class OverWorld implements TileBasedMap2d {
     public int getYSize() {
         return getPreciseYSize();
     }
-
-
-    private static int getPrecise(int globalCoord) {
-        if (globalCoord >= 0) {
-            return (globalCoord % OverWorldChunk.chunkSize);
-        } else {
-            return (globalCoord % OverWorldChunk.chunkSize) + OverWorldChunk.chunkSize - 1;
-        }
-    }
-
-    private static int getChunkCoord(int globalCoord) {
-        if (globalCoord >= 0) {
-            return (globalCoord / OverWorldChunk.chunkSize);
-        } else {
-            return (globalCoord / OverWorldChunk.chunkSize) - 1;
-        }
-    }
-
 
     public BiomeType getTileType(int globalX, int globalY) {
         OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
@@ -191,7 +189,6 @@ public class OverWorld implements TileBasedMap2d {
             chunk.elevation[getPrecise(globalX)][getPrecise(globalY)] = elevation;
     }
 
-
     public boolean getRoad(int globalX, int globalY) {
 
         OverWorldChunk chunk = loadChunk(getChunkCoord(globalX), getChunkCoord(globalY));
@@ -207,15 +204,9 @@ public class OverWorld implements TileBasedMap2d {
             chunk.road[getPrecise(globalX)][getPrecise(globalY)] = true;
     }
 
-
-    public boolean contains(int globalX, int globalY) {
-        return !(globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize);
-    }
-
-
     @Override
-    public void pathFinderVisited(int x, int y) {
-
+    public boolean isOutside(int globalX, int globalY) {
+        return globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize;
     }
 
     public void setRegion(int globalX, int globalY, int newRegion) {

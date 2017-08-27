@@ -5,8 +5,8 @@ import com.stewsters.worldgen.screens.IntroScreen;
 import com.stewsters.worldgen.screens.Screen;
 import squidpony.squidgrid.gui.swing.SwingPane;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -28,6 +28,12 @@ public class ApplicationMain extends JFrame implements KeyListener {
         repaint();
     }
 
+    public static void main(String[] args) {
+        ApplicationMain app = new ApplicationMain();
+        app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        app.setVisible(true);
+    }
+
     public void repaint() {
 
         clear(display);
@@ -46,13 +52,6 @@ public class ApplicationMain extends JFrame implements KeyListener {
 
     public void keyTyped(KeyEvent e) {
     }
-
-    public static void main(String[] args) {
-        ApplicationMain app = new ApplicationMain();
-        app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        app.setVisible(true);
-    }
-
 
     public void clear(SwingPane display) {
         for (int x = 0; x < RenderConfig.screenWidth; x++) {

@@ -54,11 +54,6 @@ public enum BiomeType {
         this.brightColor = new SColor(Math.min(color.getRed() + 20, 255), Math.min(color.getGreen() + 20, 255), Math.min(color.getBlue() + 20, 255));
     }
 
-    public byte id() {
-        return (byte) ordinal();
-    }
-
-
     // Tree Line - highest survivable trees
     // 4000 near the equator, 2000 near the poles
     // timberline - Highest canopy - forest
@@ -104,5 +99,9 @@ public enum BiomeType {
         if (p < 0.33) return GRASSLAND;
         if (p < 0.66) return TROPICAL_SEASONAL_FOREST;
         return TROPICAL_RAIN_FOREST;
+    }
+
+    public byte id() {
+        return (byte) ordinal();
     }
 }

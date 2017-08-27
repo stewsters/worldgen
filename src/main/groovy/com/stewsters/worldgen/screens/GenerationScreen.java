@@ -1,28 +1,16 @@
 package com.stewsters.worldgen.screens;
 
 
-import com.stewsters.util.math.Point2i;
 import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.messageBus.Bus;
 import com.stewsters.worldgen.procGen.WorldGenerator;
 import squidpony.squidgrid.gui.swing.SwingPane;
 
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 
 public class GenerationScreen implements Screen {
 
     private OverWorld overWorld;
-
-    private int screenWidth;
-    private int screenHeight;
-
-
-    public GenerationScreen() {
-        screenWidth = 80;
-        screenHeight = 40;
-
-    }
 
 
     @Override
@@ -38,6 +26,8 @@ public class GenerationScreen implements Screen {
         worldGenerator.generateElevation(overWorld);
 
         worldGenerator.evenElevation(overWorld);
+
+        worldGenerator.dropEdges(overWorld);
 
         // Generate temperature based on that elevation
         worldGenerator.generateTemperature(overWorld);
@@ -63,6 +53,9 @@ public class GenerationScreen implements Screen {
 
         worldGenerator.createRoadNetwork(overWorld);
 
+        worldGenerator.expandRealms(overWorld);
+
+
 
         Bus.bus.post("Finished Generation").now();
 
@@ -71,8 +64,6 @@ public class GenerationScreen implements Screen {
         display.placeHorizontalString(1, 2, "Done");
 
     }
-
-
 
 
     @Override

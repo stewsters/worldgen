@@ -5,7 +5,6 @@ import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.util.noise.OpenSimplexNoise;
 import com.stewsters.util.pathing.twoDimention.pathfinder.AStarPathFinder2d;
-import com.stewsters.util.pathing.twoDimention.pathfinder.ClosestHeuristic2d;
 import com.stewsters.util.pathing.twoDimention.shared.FullPath2d;
 import com.stewsters.util.pathing.twoDimention.shared.Mover2d;
 import com.stewsters.worldgen.game.Settlement;
@@ -14,11 +13,15 @@ import com.stewsters.worldgen.map.overworld.OverWorld;
 import com.stewsters.worldgen.map.overworld.OverWorldChunk;
 import com.stewsters.worldgen.messageBus.Bus;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
@@ -28,6 +31,8 @@ import static com.stewsters.util.math.MatUtils.d;
 public class WorldGenerator {
 
     private final static Logger log = Logger.getLogger(WorldGenerator.class.getName());
+    private static final int uncalculatedRegion = -1;
+    private static final int blockedRegion = -2;
     OpenSimplexNoise el;
     OpenSimplexNoise mo;
     Random r;
@@ -38,7 +43,6 @@ public class WorldGenerator {
         mo = new OpenSimplexNoise(r.nextLong());
     }
 
-
     public WorldGenerator() {
         r = new Random();
         el = new OpenSimplexNoise(r.nextLong());
@@ -47,21 +51,22 @@ public class WorldGenerator {
 
     public void generateElevation(OverWorld overWorld) {
         Bus.bus.post("Beginning Chunk Elevation").now();
+
+        Line2D line = new Line2D.Float(new Point2D.Float(00, overWorld.getPreciseYSize()), new Point2D.Float(overWorld.getPreciseXSize(), 0));
+        ShapeMod mod = (x, y) -> (1.2 - Math.max(line.ptLineDist(x, y) / 160f, 1));
+
         IntStream.range(0, overWorld.xSize).parallel().forEach(x -> {
             IntStream.range(0, overWorld.ySize).parallel().forEach(y -> {
-                overWorld.chunks[x][y] = generateChunkedHeightMap(overWorld, x, y);
+                overWorld.chunks[x][y] = generateChunkedHeightMap(overWorld, Arrays.asList(mod), x, y);
             });
         });
         Bus.bus.post("Finished Chunk Elevation").now();
     }
 
     // Initial step the can be done per chunk
-    public OverWorldChunk generateChunkedHeightMap(OverWorld overWorld, int chunkX, int chunkY) {
+    public OverWorldChunk generateChunkedHeightMap(OverWorld overWorld, List<ShapeMod> shapeMods, int chunkX, int chunkY) {
 
         OverWorldChunk overWorldChunk = new OverWorldChunk();
-
-        int xCenter = overWorld.xSize * OverWorldChunk.chunkSize / 2;
-        int yCenter = overWorld.ySize * OverWorldChunk.chunkSize / 2;
 
         for (int x = 0; x < OverWorldChunk.chunkSize; x++) {
             for (int y = 0; y < OverWorldChunk.chunkSize; y++) {
@@ -70,21 +75,14 @@ public class WorldGenerator {
                 int nx = chunkX * OverWorldChunk.chunkSize + x;
                 int ny = chunkY * OverWorldChunk.chunkSize + y;
 
-                float xDist = (float) Math.abs(nx - xCenter) / xCenter;
-                float yDist = (float) Math.abs(ny - yCenter) / yCenter;
+                double ridginess = fbm(nx, ny, 6, 1 / 320D, 1, 2D, 0.5D);
+                ridginess = Math.abs(ridginess) * -1;
 
-                double ridginess = octave(nx / 100.0, ny / 100.0, 5, 0.5f);
-                ridginess = (-2.0 * Math.abs(ridginess)) + 1.0;
-                ridginess *= ((el.eval(nx / 430.0, ny / 430.0) + 1.0) / 2.0);
+                double elevation = Math.max((fbm(nx, ny, 6, 1 / 200D, 1, 2D, 0.5D)), (ridginess));
 
-                double elevation = (el.eval(nx / 120.0, ny / 120.0)) +
-                        0.1 * (el.eval(nx / 70.0, ny / 70.0)) +
-                        (ridginess * el.eval(nx / 30.0, ny / 30.0));
-
-                elevation = Math.pow(elevation, 2);
-
-                // Elevation - decreases near edges
-                elevation += 2 * (1 - Math.max(xDist, yDist));
+                for (ShapeMod mod : shapeMods) {
+                    elevation += mod.modify(nx, ny);
+                }
 
                 overWorldChunk.elevation[x][y] = (float) elevation;
             }
@@ -92,16 +90,15 @@ public class WorldGenerator {
         return overWorldChunk;
     }
 
-    public double octave(double x, double y, int numOctaves, float fallOff) {
-        double result = 0;
-
-        for (int octaveNo = 0; octaveNo < numOctaves; octaveNo++) {
-            double scale = 1 / (octaveNo + 1);
-            result += scale * el.eval(x * scale, y * scale);
+    public double fbm(double x, double y, int octaves, double frequency, double amplitude, double lacunarity, double gain) {
+        double total = 0.0;
+        for (int i = 0; i < octaves; ++i) {
+            total += el.eval(x * frequency, y * frequency) * amplitude;
+            frequency *= lacunarity;
+            amplitude *= gain;
         }
-        return result;
+        return total;
     }
-
 
     public void generateTemperature(OverWorld overWorld) {
         Bus.bus.post("Starting Chunk Temperature").now();
@@ -168,6 +165,32 @@ public class WorldGenerator {
         Bus.bus.post("Finished Evening").now();
     }
 
+    public void dropEdges(OverWorld overWorld) {
+        Bus.bus.post("Start Drop Edges").now();
+        int xSize = overWorld.getPreciseXSize();
+        int ySize = overWorld.getPreciseYSize();
+
+
+        int xCenter = overWorld.xSize * OverWorldChunk.chunkSize / 2;
+        int yCenter = overWorld.ySize * OverWorldChunk.chunkSize / 2;
+
+        double maxDist = Math.sqrt(xCenter * xCenter + yCenter * yCenter);
+
+        for (int y = 0; y < ySize; y++) {
+            for (int x = 0; x < xSize; x++) {
+                double elev = overWorld.getElevation(x, y);
+                double dist = Math.sqrt(Math.pow(xCenter - x, 2) + Math.pow(yCenter - y, 2));
+
+                // Elevation - decreases near edges
+                elev = MatUtils.limit(elev - (Math.pow(dist / maxDist, 4)), -1, 1);
+                overWorld.setElevation(x, y, (float) elev);
+            }
+        }
+        Bus.bus.post("End Drop Edges").now();
+
+    }
+
+    // Run rivers
 
     public void generateWind(OverWorld overWorld) {
         Bus.bus.post("Starting Wind").now();
@@ -231,7 +254,7 @@ public class WorldGenerator {
                 float distanceLeft = maxDistance;
                 while (distanceLeft > 0) {
 
-                    if (!overWorld.contains((int) tempX, (int) tempY)) break;
+                    if (overWorld.isOutside((int) tempX, (int) tempY)) break;
 
                     BiomeType bt = overWorld.getTileType((int) tempX, (int) tempY);
                     if (bt.water) break;
@@ -282,8 +305,6 @@ public class WorldGenerator {
 
     }
 
-    // Run rivers
-
     /**
      * Precipitation should flow down grade to the sea
      * Anywhere there is a significant flow should be marked as a river
@@ -312,7 +333,7 @@ public class WorldGenerator {
 
                                     while (true) {
 
-                                        if (!overWorld.contains(tempX, tempY))
+                                        if (overWorld.isOutside(tempX, tempY))
                                             break;
 
                                         // if the biome is ocean or frozen then end.
@@ -385,15 +406,15 @@ public class WorldGenerator {
                 }
             }
 
-//            for (int x = 0; x < xSize; x++) {
-//                for (int y = 0; y < ySize; y++) {
-//
-//                    if (riverFlux[x][y] > maxFlux / 2f && !overWorld.getTileType(x, y).water) {
-//                        overWorld.setRiver(x, y);
-//                    }
-//
-//                }
-//            }
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+
+                    if (riverFlux[x][y] > maxFlux / 2f && !overWorld.getTileType(x, y).water) {
+                        overWorld.setRiver(x, y);
+                    }
+
+                }
+            }
         }
 
         Bus.bus.post("Finished Rivers").now();
@@ -496,7 +517,7 @@ public class WorldGenerator {
             }
             Collections.sort(pairs);
 
-            AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize(), true, new ClosestHeuristic2d());
+            AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize());
             Mover2d mover2d = new RoadRunnerMover(overWorld);
 
             for (RankedSettlementPair p : pairs) {
@@ -526,9 +547,6 @@ public class WorldGenerator {
         Bus.bus.post("Finished Creating Roads").now();
     }
 
-    private static final int uncalculatedRegion = -1;
-    private static final int blockedRegion = -2;
-
     // This finds contiguous land masses
     public void generateContinents(OverWorld overWorld) {
 
@@ -552,25 +570,6 @@ public class WorldGenerator {
             }
         }
         Bus.bus.post("Finished Generating Continents").now();
-    }
-
-    private void floodFill(OverWorld overWorld, int x, int y, int target, int replacement) {
-
-        if (target == replacement)
-            return;
-        if (target != overWorld.getRegionId(x, y))
-            return;
-
-        overWorld.setRegion(x, y, replacement);
-
-        if (x < overWorld.getPreciseXSize())
-            floodFill(overWorld, x + 1, y, target, replacement);
-        if (x > 0)
-            floodFill(overWorld, x - 1, y, target, replacement);
-        if (y < overWorld.getPreciseYSize())
-            floodFill(overWorld, x, y + 1, target, replacement);
-        if (y > 0)
-            floodFill(overWorld, x, y - 1, target, replacement);
     }
 
     private void floodFillBFS(OverWorld overWorld, int sx, int sy, int target, int replacement) {
@@ -604,6 +603,17 @@ public class WorldGenerator {
                     stack.push(new Point2i(x, y - 1));
             }
         }
+
+    }
+
+    public void expandRealms(OverWorld overWorld) {
+        int[][] realm;
+
+        // select empire starting points
+
+        // set them as their respective
+
+
 
     }
 }

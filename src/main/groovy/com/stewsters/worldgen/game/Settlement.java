@@ -7,9 +7,8 @@ import java.util.ArrayList;
 
 public class Settlement {
 
-    private static int topId = 0;
     public static ArrayList<Settlement> settlements = new ArrayList<Settlement>();
-
+    private static int topId = 0;
     public int id;
     public Point2i pos;
     public int population;
