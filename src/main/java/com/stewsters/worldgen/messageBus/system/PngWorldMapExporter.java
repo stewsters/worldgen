@@ -9,7 +9,7 @@ import squidpony.squidcolor.SColor;
 import squidpony.squidcolor.SColorFactory;
 
 import javax.imageio.ImageIO;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;

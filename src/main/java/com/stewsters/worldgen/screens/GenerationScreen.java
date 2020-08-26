@@ -56,7 +56,6 @@ public class GenerationScreen implements Screen {
         worldGenerator.expandRealms(overWorld);
 
 
-
         Bus.bus.post("Finished Generation").now();
 
         Bus.bus.post(overWorld).asynchronously();

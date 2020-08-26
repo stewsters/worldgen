@@ -1,12 +1,14 @@
 package com.stewsters.worldgen.map.overworld;
 
 
-import com.stewsters.util.pathing.twoDimention.shared.TileBasedMap2d;
+//import com.stewsters.util.pathing.twoDimention.shared.TileBasedMap2d;
+
+import com.stewsters.util.pathing.twoDimention.shared.BoundingBox2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 
 
-public class OverWorld implements TileBasedMap2d {
+public class OverWorld implements BoundingBox2d {
 
     public final int xSize;
     public final int ySize;
@@ -46,12 +48,11 @@ public class OverWorld implements TileBasedMap2d {
         return ySize * OverWorldChunk.chunkSize;
     }
 
-    @Override
+
     public int getXSize() {
         return getPreciseXSize();
     }
 
-    @Override
     public int getYSize() {
         return getPreciseYSize();
     }
@@ -204,7 +205,6 @@ public class OverWorld implements TileBasedMap2d {
             chunk.road[getPrecise(globalX)][getPrecise(globalY)] = true;
     }
 
-    @Override
     public boolean isOutside(int globalX, int globalY) {
         return globalX < 0 || globalY < 0 || globalX >= xSize * OverWorldChunk.chunkSize || globalY >= ySize * OverWorldChunk.chunkSize;
     }

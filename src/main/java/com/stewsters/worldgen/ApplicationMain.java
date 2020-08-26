@@ -5,8 +5,8 @@ import com.stewsters.worldgen.screens.IntroScreen;
 import com.stewsters.worldgen.screens.Screen;
 import squidpony.squidgrid.gui.swing.SwingPane;
 
-import javax.swing.JFrame;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 

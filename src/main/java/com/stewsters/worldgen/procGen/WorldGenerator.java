@@ -4,9 +4,8 @@ import com.stewsters.util.math.Facing2d;
 import com.stewsters.util.math.MatUtils;
 import com.stewsters.util.math.Point2i;
 import com.stewsters.util.noise.OpenSimplexNoise;
+import com.stewsters.util.pathing.twoDimention.heuristic.ClosestHeuristic2d;
 import com.stewsters.util.pathing.twoDimention.pathfinder.AStarPathFinder2d;
-import com.stewsters.util.pathing.twoDimention.shared.FullPath2d;
-import com.stewsters.util.pathing.twoDimention.shared.Mover2d;
 import com.stewsters.worldgen.game.Settlement;
 import com.stewsters.worldgen.map.BiomeType;
 import com.stewsters.worldgen.map.overworld.OverWorld;
@@ -15,14 +14,7 @@ import com.stewsters.worldgen.messageBus.Bus;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -518,20 +510,32 @@ public class WorldGenerator {
             Collections.sort(pairs);
 
             AStarPathFinder2d pathFinder2d = new AStarPathFinder2d(overWorld, overWorld.getPreciseXSize() * overWorld.getPreciseYSize());
-            Mover2d mover2d = new RoadRunnerMover(overWorld);
+//            Mover2d mover2d = new RoadRunnerMover(overWorld);
 
+            final float offroadMult = 2f;
+            final float hillClimb = 1000f;
             for (RankedSettlementPair p : pairs) {
                 Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
 
                 Settlement a = Settlement.settlements.get(p.a);
                 Settlement b = Settlement.settlements.get(p.b);
-                FullPath2d path = pathFinder2d.findPath(mover2d, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+                Optional<List<Point2i>> path = pathFinder2d.findPath(
+                        (int sx, int sy, int tx, int ty) -> overWorld.getElevation(tx, ty) > 0,
+                        (int tx, int ty) -> overWorld.getElevation(tx, ty) > 0,
+                        (int sx, int sy, int tx, int ty) -> {
+                            // The difference in elevation is absolutely tiny. so penalize any change drastically.
+                            return ((overWorld.getRoad(tx, ty) ? 1f : offroadMult) // roads are less expensive
+                                    * (((tx == sx) || (ty == tx)) ? 0.7f : 1f) // diagonal
+                                    * (1 + (hillClimb * Math.abs(overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy)))));
+                        },
+                        new ClosestHeuristic2d(),
+                        true,
+                        a.pos.x, a.pos.y, b.pos.x, b.pos.y);
 
-                if (path != null) {
+                if (path.isPresent()) {
 
-                    for (int i = 0; i < path.getLength(); i++) {
-                        FullPath2d.Step step = path.getStep(i);
-                        overWorld.setRoad(step.getX(), step.getY());
+                    for (Point2i step : path.get()) {
+                        overWorld.setRoad(step.x, step.y);
                     }
 
                 }
@@ -612,7 +616,6 @@ public class WorldGenerator {
         // select empire starting points
 
         // set them as their respective
-
 
 
     }
