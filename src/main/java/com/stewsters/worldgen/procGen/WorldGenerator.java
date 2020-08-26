@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static com.stewsters.util.math.MatUtils.d;
+import static com.stewsters.util.math.MatUtils.euclideanDistance;
 
 public class WorldGenerator {
 
@@ -46,6 +47,7 @@ public class WorldGenerator {
 
         Line2D line = new Line2D.Float(new Point2D.Float(00, overWorld.getPreciseYSize()), new Point2D.Float(overWorld.getPreciseXSize(), 0));
         ShapeMod mod = (x, y) -> (1.2 - Math.max(line.ptLineDist(x, y) / 160f, 1));
+//        ShapeMod mod = (x,y)-> 1 - euclideanDistance(x,y, overWorld.xSize/2, overWorld.ySize/2)/overWorld.xSize ;
 
         IntStream.range(0, overWorld.xSize).parallel().forEach(x -> {
             IntStream.range(0, overWorld.ySize).parallel().forEach(y -> {
@@ -513,7 +515,7 @@ public class WorldGenerator {
 //            Mover2d mover2d = new RoadRunnerMover(overWorld);
 
             final float offroadMult = 2f;
-            final float hillClimb = 1000f;
+            final float hillClimb = 500f;
             for (RankedSettlementPair p : pairs) {
                 Bus.bus.post("Distance " + p.distance + " a:" + p.a + " b:" + p.b).now();
 
@@ -524,9 +526,9 @@ public class WorldGenerator {
                         (int tx, int ty) -> overWorld.getElevation(tx, ty) > 0,
                         (int sx, int sy, int tx, int ty) -> {
                             // The difference in elevation is absolutely tiny. so penalize any change drastically.
-                            return ((overWorld.getRoad(tx, ty) ? 1f : offroadMult) // roads are less expensive
+                            return (overWorld.getRoad(tx, ty) ? 1f : offroadMult) // existing roads are less expensive
                                     * (((tx == sx) || (ty == tx)) ? 0.7f : 1f) // diagonal
-                                    * (1 + (hillClimb * Math.abs(overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy)))));
+                                    * (1 + (hillClimb * Math.abs(overWorld.getElevation(tx, ty) - overWorld.getElevation(sx, sy))));
                         },
                         new ClosestHeuristic2d(),
                         true,
